@@ -1,58 +1,24 @@
-"use client";
-import { DashboardShell, type NavSection } from "@/components/dashboard/DashboardShell";
-import {
-  LayoutDashboard, Package, CheckSquare, BarChart2,
-  FolderOpen, Target, DollarSign, Settings, Lock,
-} from "lucide-react";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { verifySession } from "@/lib/dal";
+import { getClientById } from "@/lib/queries";
 
-// Demo context: Relay Software — Gold tier
-// Gold can see: Overview, Deliverables, Approvals, Files, Leads
-// Hidden (Platinum only): Revenue Dashboard
+export default async function ClientLayout({ children }: { children: React.ReactNode }) {
+  const session = await verifySession();
 
-const navSections: NavSection[] = [
-  {
-    label: "Overview",
-    items: [
-      { label: "Overview", href: "/client", icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: "Work",
-    items: [
-      { label: "Deliverables", href: "/client/deliverables", icon: Package },
-      { label: "Approvals",    href: "/client/approvals",   icon: CheckSquare, badge: 2 },
-      { label: "Files",        href: "/client/files",       icon: FolderOpen },
-    ],
-  },
-  {
-    label: "Analytics",
-    items: [
-      { label: "Reports",      href: "/client/reports", icon: BarChart2 },
-      { label: "Lead Tracker", href: "/client/leads",   icon: Target },
-    ],
-  },
-  {
-    label: "Revenue",
-    items: [
-      { label: "Revenue Dashboard", href: "/client/revenue", icon: DollarSign, locked: true },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { label: "Settings", href: "/client/settings", icon: Settings },
-    ],
-  },
-];
+  if (session.role === "owner") {
+    return (
+      <DashboardShell role="client" userName={session.name} userSub="Owner Preview">
+        {children}
+      </DashboardShell>
+    );
+  }
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  const client = session.clientId ? await getClientById(session.clientId) : null;
+  const userName = client?.company_name ?? session.name;
+  const userSub = client ? `${client.tier} Plan` : "Client";
+
   return (
-    <DashboardShell
-      navSections={navSections}
-      role="client"
-      userName="Relay Software"
-      userSub="Gold Plan"
-    >
+    <DashboardShell role="client" userName={userName} userSub={userSub}>
       {children}
     </DashboardShell>
   );

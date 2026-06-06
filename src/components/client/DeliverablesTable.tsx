@@ -66,13 +66,13 @@ export function DeliverablesTable({ items }: { items: DbContentItem[] }) {
                 <td className="px-4 py-3.5">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-[#f3f4f6] flex items-center justify-center shrink-0">
-                      {typeIcon[item.type]}
+                      {typeIcon[item.type as ContentType]}
                     </div>
                     <p className="text-[13px] font-medium text-[#111111] leading-snug">{item.title}</p>
                   </div>
                 </td>
                 <td className="px-4 py-3.5">
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full border ${typeColors[item.type]}`}>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full border ${typeColors[item.type as ContentType]}`}>
                     {item.type}
                   </span>
                 </td>

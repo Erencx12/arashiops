@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Search, Plus } from "lucide-react";
 import { Badge } from "@/components/dashboard/Badge";
 import type { DbClient } from "@/lib/db-types";
@@ -29,10 +30,13 @@ export function ClientsTable({ clients }: { clients: DbClient[] }) {
             {clients.length} total · {activeCount} active
           </p>
         </div>
-        <button className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#111111] text-white text-[12.5px] font-medium rounded-md hover:bg-[#1a1a1a] transition-colors">
+        <Link
+          href="/admin/clients/invite"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#111111] text-white text-[12.5px] font-medium rounded-md hover:bg-[#1a1a1a] transition-colors"
+        >
           <Plus size={13} />
-          Add Client
-        </button>
+          Invite Client
+        </Link>
       </div>
 
       {/* Filters */}
@@ -77,7 +81,11 @@ export function ClientsTable({ clients }: { clients: DbClient[] }) {
           </thead>
           <tbody className="divide-y divide-[#f3f4f6]">
             {filtered.map((c) => (
-              <tr key={c.id} className="hover:bg-[#fafafa] transition-colors">
+              <tr
+                key={c.id}
+                onClick={() => window.location.href = `/admin/clients/${c.id}`}
+                className="hover:bg-[#fafafa] transition-colors cursor-pointer"
+              >
                 <td className="px-4 py-3.5">
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-full bg-[#f3f4f6] flex items-center justify-center shrink-0">

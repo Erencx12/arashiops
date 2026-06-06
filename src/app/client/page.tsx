@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { CheckSquare, Package, ArrowRight, Activity } from "lucide-react";
 import { Badge } from "@/components/dashboard/Badge";
+import { verifyClientSession } from "@/lib/dal";
 import {
-  getClientByName,
+  getClientById,
   getProjectsByClient,
   getApprovalsByClient,
   getContentItemsByClient,
@@ -11,16 +12,14 @@ import {
 
 export const metadata = { title: "Client Overview" };
 
-// Demo client: Relay Software — swap when auth is wired
-const DEMO_CLIENT = "Relay Software";
-
 export default async function ClientOverview() {
-  const client = await getClientByName(DEMO_CLIENT);
+  const session = await verifyClientSession();
+  const client = await getClientById(session.clientId);
 
   if (!client) {
     return (
       <div className="px-8 py-8">
-        <p className="text-[13px] text-[#9ca3af]">Client not found.</p>
+        <p className="text-[13px] text-[#9ca3af]">Client record not found.</p>
       </div>
     );
   }

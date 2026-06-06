@@ -2,10 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type LucideIcon, Lock, ExternalLink } from "lucide-react";
+import {
+  Lock, ExternalLink,
+  LayoutDashboard, TrendingUp, Users, FolderKanban, Bot,
+  SquareCheckBig, FileText, Video, FileCheck, Receipt, Settings,
+  Package, BarChart2, FolderOpen, Target, DollarSign, ListTodo, ClipboardList,
+  Handshake, Phone,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
+import { LogoutButton } from "./LogoutButton";
 
-export type NavItem = {
+type NavItem = {
   label: string;
   href: string;
   icon: LucideIcon;
@@ -13,21 +21,122 @@ export type NavItem = {
   locked?: boolean;
 };
 
-export type NavSection = {
+type NavSection = {
   label: string;
   items: NavItem[];
 };
 
+const OWNER_NAV: NavSection[] = [
+  {
+    label: "Workspace",
+    items: [
+      { label: "Overview", href: "/admin",   icon: LayoutDashboard },
+      { label: "Metrics",  href: "/metrics", icon: TrendingUp },
+    ],
+  },
+  {
+    label: "Clients",
+    items: [
+      { label: "All Clients", href: "/admin/clients",  icon: Users },
+      { label: "Projects",    href: "/admin/projects", icon: FolderKanban },
+      { label: "Tasks",       href: "/admin/tasks",    icon: ListTodo },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      { label: "Agents",    href: "/admin/agents",    icon: Bot },
+      { label: "Approvals", href: "/admin/approvals", icon: SquareCheckBig, badge: 3 },
+      { label: "Content",   href: "/admin/content",   icon: FileText },
+    ],
+  },
+  {
+    label: "Communication",
+    items: [
+      { label: "Meetings", href: "/admin/meetings", icon: Video },
+    ],
+  },
+  {
+    label: "Commercial",
+    items: [
+      { label: "Deals",      href: "/admin/deals",      icon: Handshake },
+      { label: "Discovery",  href: "/admin/discovery",  icon: Phone },
+      { label: "Proposals",  href: "/admin/proposals",  icon: FileText },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
+      { label: "Contracts", href: "/admin/contracts", icon: FileCheck },
+      { label: "Invoices",  href: "/admin/invoices",  icon: Receipt },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { label: "Settings", href: "/admin/settings", icon: Settings },
+    ],
+  },
+  {
+    label: "Preview",
+    items: [
+      { label: "Client Portal", href: "/client", icon: LayoutDashboard },
+    ],
+  },
+];
+
+const CLIENT_NAV: NavSection[] = [
+  {
+    label: "Overview",
+    items: [
+      { label: "Overview", href: "/client", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Getting Started",
+    items: [
+      { label: "Onboarding", href: "/client/onboarding", icon: ClipboardList },
+    ],
+  },
+  {
+    label: "Work",
+    items: [
+      { label: "Deliverables", href: "/client/deliverables", icon: Package },
+      { label: "Approvals",    href: "/client/approvals",    icon: SquareCheckBig, badge: 2 },
+      { label: "Files",        href: "/client/files",        icon: FolderOpen },
+    ],
+  },
+  {
+    label: "Analytics",
+    items: [
+      { label: "Reports",      href: "/client/reports", icon: BarChart2 },
+      { label: "Lead Tracker", href: "/client/leads",   icon: Target },
+    ],
+  },
+  {
+    label: "Revenue",
+    items: [
+      { label: "Revenue Dashboard", href: "/client/revenue", icon: DollarSign, locked: true },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { label: "Settings", href: "/client/settings", icon: Settings },
+    ],
+  },
+];
+
 type Props = {
-  navSections: NavSection[];
   role: "owner" | "client";
   userName: string;
   userSub: string;
   children: React.ReactNode;
 };
 
-export function DashboardShell({ navSections, role, userName, userSub, children }: Props) {
+export function DashboardShell({ role, userName, userSub, children }: Props) {
   const pathname = usePathname();
+  const navSections = role === "owner" ? OWNER_NAV : CLIENT_NAV;
 
   const initials = userName
     .split(" ")
@@ -109,6 +218,7 @@ export function DashboardShell({ navSections, role, userName, userSub, children 
               <span>Back to website</span>
             </Link>
           )}
+          <LogoutButton />
           <div className="flex items-center gap-2.5 px-2.5 py-[7px]">
             <div className="w-6 h-6 rounded-full bg-[#111111] flex items-center justify-center shrink-0">
               <span className="text-[9px] font-bold text-white">{initials}</span>

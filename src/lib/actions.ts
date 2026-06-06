@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { sql } from "./db";
+import { verifySession } from "./dal";
 import type { ApprovalStatus, ProjectStatus } from "./db-types";
 
 export async function updateApprovalStatus(
@@ -9,6 +10,7 @@ export async function updateApprovalStatus(
   status: ApprovalStatus,
   comment?: string
 ) {
+  await verifySession(); // must be authenticated
   await sql`
     UPDATE approvals
     SET status = ${status},
@@ -25,6 +27,8 @@ export async function updateApprovalStatus(
 }
 
 export async function updateProjectStatus(id: number, status: ProjectStatus) {
+  const session = await verifySession();
+  if (session.role !== "owner") return;
   await sql`
     UPDATE projects SET status = ${status} WHERE id = ${id}
   `;
@@ -33,6 +37,8 @@ export async function updateProjectStatus(id: number, status: ProjectStatus) {
 }
 
 export async function updateProjectProgress(id: number, progress: number) {
+  const session = await verifySession();
+  if (session.role !== "owner") return;
   await sql`
     UPDATE projects SET progress = ${progress} WHERE id = ${id}
   `;

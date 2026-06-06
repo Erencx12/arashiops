@@ -74,8 +74,8 @@ export function ContentGrid({ items }: { items: DbContentItem[] }) {
         {filtered.map((item) => (
           <div key={item.id} className="border border-[#e5e7eb] rounded-xl p-5 bg-white hover:border-[#d1d5db] transition-colors group">
             <div className="flex items-start justify-between mb-3">
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full border ${typeColors[item.type]}`}>
-                {typeIcon[item.type]}
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full border ${typeColors[item.type as ContentType]}`}>
+                {typeIcon[item.type as ContentType]}
                 {item.type}
               </span>
               <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-[#f3f4f6]">
