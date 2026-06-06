@@ -8,58 +8,65 @@ const id = "pricing";
 
 const tiers = [
   {
-    name: "Silver",
+    name: "Outbound Foundation",
+    badge: "Silver",
     price: "$1,500",
     period: "/mo",
     description:
-      "For early-stage businesses building their first structured revenue system.",
+      "For B2B companies building their first structured outbound acquisition system.",
     features: [
-      "ICP definition & research",
-      "2 active outbound campaigns",
-      "Lead qualification workflow",
-      "CRM setup & hygiene",
-      "Monthly strategy call",
-      "Performance reporting",
+      "ICP definition & prospect research",
+      "Verified lead lists",
+      "2 cold email domains",
+      "2 active outreach campaigns",
+      "7-touch email sequences",
+      "CRM routing setup",
+      "Monthly optimization review",
+      "Monthly reporting",
     ],
     cta: "Get Started",
+    ctaHref: "/get-started",
     highlight: false,
   },
   {
-    name: "Gold",
+    name: "Revenue Infrastructure",
+    badge: "Gold",
     price: "$4,500",
     period: "/mo",
     description:
-      "For growing businesses that need full-stack revenue operations at scale.",
+      "For revenue-focused teams ready to scale pipeline with full outbound infrastructure.",
     features: [
-      "Everything in Silver",
+      "Everything in Outbound Foundation",
       "5 active campaigns",
-      "Content production (8/mo)",
-      "Email & LinkedIn sequences",
-      "Sales enablement scripts",
-      "Revenue attribution dashboards",
-      "Weekly strategy calls",
-      "Dedicated account manager",
+      "Multi-domain infrastructure",
+      "Claude lead qualification",
+      "Reply categorization",
+      "Automated CRM routing",
+      "Sales enablement frameworks",
+      "Revenue attribution dashboard",
+      "Weekly optimization reviews",
     ],
     cta: "Get Started",
+    ctaHref: "/get-started",
     highlight: true,
   },
   {
-    name: "Platinum",
+    name: "Enterprise",
+    badge: "Enterprise",
     price: "Custom",
     period: "",
     description:
-      "For established businesses that need a fully integrated growth infrastructure.",
+      "Custom revenue infrastructure for companies requiring deeper automation, CRM integrations, and multi-channel acquisition systems.",
     features: [
       "Everything in Gold",
-      "Unlimited campaigns",
-      "Full content system",
-      "Paid media management",
-      "SDR/BDR support",
-      "Executive reporting",
-      "Quarterly business reviews",
-      "Priority onboarding",
+      "Multi-workflow automation",
+      "Advanced CRM integrations",
+      "Custom reporting & attribution",
+      "Dedicated strategy support",
+      "Enterprise onboarding & consulting",
     ],
-    cta: "Book a Call",
+    cta: "Schedule Strategy Call",
+    ctaHref: "/book",
     highlight: false,
   },
 ];
@@ -113,8 +120,15 @@ export function PricingSection() {
 
               <div className="mb-6">
                 <p
-                  className={`text-[12px] font-semibold uppercase tracking-widest mb-3 ${
+                  className={`text-[12px] font-semibold uppercase tracking-widest mb-1.5 ${
                     tier.highlight ? "text-[#9ca3af]" : "text-[#6b7280]"
+                  }`}
+                >
+                  {tier.badge}
+                </p>
+                <p
+                  className={`text-[17px] font-bold mb-3 ${
+                    tier.highlight ? "text-white" : "text-[#111111]"
                   }`}
                 >
                   {tier.name}
@@ -167,7 +181,7 @@ export function PricingSection() {
               </ul>
 
               <Link
-                href={tier.cta === "Book a Call" ? "/book" : "/get-started"}
+                href={tier.ctaHref}
                 className={`block text-center py-2.5 rounded-md text-[14px] font-medium transition-colors ${
                   tier.highlight
                     ? "bg-white text-[#111111] hover:bg-[#f3f4f6]"

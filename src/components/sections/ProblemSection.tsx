@@ -5,34 +5,34 @@ import { AlertCircle } from "lucide-react";
 
 const problems = [
   {
-    title: "Inconsistent lead flow",
+    title: "Unpredictable pipeline",
     description:
-      "Revenue depends on outbound effort that stops when the team gets busy. No predictable pipeline.",
+      "Revenue depends on whoever is actively selling. When the team gets busy, pipeline dries up. No systematic way to fill it back up.",
   },
   {
-    title: "No follow-up system",
+    title: "Poor lead quality",
     description:
-      "Leads fall through the cracks because there's no structured nurture or re-engagement process.",
+      "Sales teams waste hours on discovery calls with prospects that were never a fit. No qualification layer before human contact means unqualified leads consume the most expensive resource: time.",
   },
   {
-    title: "Zero visibility",
+    title: "Broken follow-up",
     description:
-      "No single view of campaign performance, conversion rates, or revenue attribution across channels.",
+      "Leads request proposals and never hear back. Follow-up depends on memory, not infrastructure. Revenue leaks through every gap in the process.",
   },
   {
-    title: "Manual operations",
+    title: "CRM nobody trusts",
     description:
-      "Hours wasted on tasks that should be automated: CRM updates, scheduling, reporting, handoffs.",
+      "Deal data lives in spreadsheets, email threads, and people's heads. Without a single source of truth, every pipeline review is a guess.",
   },
   {
-    title: "Slow content output",
+    title: "Manual prospecting overhead",
     description:
-      "Content creation is ad hoc, inconsistent, and disconnected from lead generation outcomes.",
+      "Senior people spending 15+ hours per week on list building, cold outreach, and data entry — work that should be running automatically.",
   },
   {
-    title: "Misaligned sales process",
+    title: "No revenue attribution",
     description:
-      "Marketing hands off unqualified leads. Sales closes at low rates. Nobody agrees on what a qualified lead looks like.",
+      "No way to know which campaigns generate pipeline, which sequences drive responses, or where to invest for the next quarter.",
   },
 ];
 

@@ -21,8 +21,8 @@ const step1Schema = z.object({
 const step2Schema = z.object({
   website: z.string().url("Enter a valid URL").or(z.literal("")),
   industry: z.string().min(1, "Select an industry"),
-  teamSize: z.string().min(1, "Select team size"),
-  revenue: z.string().min(1, "Select revenue range"),
+  dealSize: z.string().min(1, "Select average deal size"),
+  crm: z.string().min(1, "Select your CRM"),
 });
 
 const step3Schema = z.object({
@@ -35,6 +35,7 @@ const step4Schema = z.object({
 
 type Step1Data = z.infer<typeof step1Schema>;
 type Step2Data = z.infer<typeof step2Schema>;
+
 type Step3Data = z.infer<typeof step3Schema>;
 type Step4Data = z.infer<typeof step4Schema>;
 
@@ -51,37 +52,45 @@ const industries = [
   "Other",
 ];
 
-const teamSizes = ["1–5", "6–15", "16–50", "51–200", "200+"];
+const dealSizes = [
+  "Under $1K",
+  "$1K–$5K",
+  "$5K–$20K",
+  "$20K–$50K",
+  "$50K–$100K",
+  "$100K+",
+];
 
-const revenueRanges = [
-  "Under $100K",
-  "$100K–$500K",
-  "$500K–$1M",
-  "$1M–$5M",
-  "$5M–$20M",
-  "$20M+",
+const crmOptions = [
+  "HubSpot",
+  "Salesforce",
+  "Pipedrive",
+  "Close",
+  "Zoho",
+  "None",
+  "Other",
 ];
 
 const goals = [
   {
-    id: "lead-generation",
-    title: "Lead Generation",
-    desc: "Build predictable outbound pipelines",
+    id: "pipeline-building",
+    title: "Pipeline Building",
+    desc: "Build predictable outbound acquisition systems",
   },
   {
-    id: "content-production",
-    title: "Content Production",
-    desc: "Authority-building content at scale",
+    id: "lead-qualification",
+    title: "Lead Qualification",
+    desc: "Qualify and route prospects automatically",
   },
   {
-    id: "sales-automation",
-    title: "Sales Automation",
-    desc: "Automate follow-ups and workflows",
+    id: "crm-infrastructure",
+    title: "CRM Infrastructure",
+    desc: "Automate CRM routing and deal tracking",
   },
   {
-    id: "full-revenue-system",
-    title: "Full Revenue System",
-    desc: "End-to-end operating infrastructure",
+    id: "full-outbound-system",
+    title: "Full Outbound System",
+    desc: "End-to-end outbound revenue infrastructure",
   },
 ];
 
@@ -424,21 +433,21 @@ function StepTwo({
               error={!!errors.industry}
             />
           </Field>
-          <Field label="Team Size" error={errors.teamSize?.message}>
+          <Field label="Average Deal Size" error={errors.dealSize?.message}>
             <Select
-              options={teamSizes}
-              value={watch("teamSize") || ""}
-              onChange={(e) => setValue("teamSize", e.target.value)}
-              error={!!errors.teamSize}
+              options={dealSizes}
+              value={watch("dealSize") || ""}
+              onChange={(e) => setValue("dealSize", e.target.value)}
+              error={!!errors.dealSize}
             />
           </Field>
         </div>
-        <Field label="Current Annual Revenue" error={errors.revenue?.message}>
+        <Field label="Existing CRM" error={errors.crm?.message}>
           <Select
-            options={revenueRanges}
-            value={watch("revenue") || ""}
-            onChange={(e) => setValue("revenue", e.target.value)}
-            error={!!errors.revenue}
+            options={crmOptions}
+            value={watch("crm") || ""}
+            onChange={(e) => setValue("crm", e.target.value)}
+            error={!!errors.crm}
           />
         </Field>
         <NavButtons onNext={onSubmit} onBack={onBack} />
@@ -533,7 +542,7 @@ function StepFour({
           <textarea
             {...register("details")}
             rows={7}
-            placeholder="We're a B2B SaaS company in the HR space. Our current MRR is $40K and we're struggling to build consistent pipeline beyond our founding network. We want to hit $100K MRR within 8 months..."
+            placeholder="We're a B2B SaaS company targeting mid-market operations teams. Our average deal is $15K and we currently have no outbound motion — pipeline comes entirely from referrals. We want 30+ qualified meetings per month within 90 days..."
             className={`w-full px-3 py-3 text-[14px] bg-white border rounded-md outline-none transition-colors resize-none leading-relaxed ${
               errors.details
                 ? "border-red-300 focus:border-red-400"

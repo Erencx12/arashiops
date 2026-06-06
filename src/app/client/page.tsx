@@ -187,13 +187,13 @@ export default async function ClientOverview() {
           </div>
 
           {/* Upgrade prompt */}
-          {client.tier !== "Platinum" && (
+          {client.tier === "Silver" && (
             <div className="border border-[#e5e7eb] rounded-xl p-5 bg-white">
               <p className="text-[11px] font-semibold uppercase tracking-widest text-[#9ca3af] mb-2">
-                Upgrade to Platinum
+                Upgrade to Gold
               </p>
               <p className="text-[13px] text-[#374151] leading-relaxed mb-3">
-                Unlock paid media management, a dedicated revenue dashboard, and executive reporting.
+                Unlock 5 active campaigns, Claude lead qualification, automated CRM routing, and weekly revenue attribution reports.
               </p>
               <Link
                 href="/book"

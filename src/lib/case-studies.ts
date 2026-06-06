@@ -169,9 +169,9 @@ export const caseStudies: CaseStudy[] = [
             "HubSpot implementation, email sequences for all three buyer personas, LinkedIn automation for the partners' profiles, and a content calendar delivering two thought-leadership pieces per week.",
         },
         {
-          name: "Phase 3: Content Engine",
+          name: "Phase 3: Outbound Automation",
           detail:
-            "Launched a systematic content programme across LinkedIn and email. Each piece was designed to drive inbound enquiries from pre-qualified buyers, reducing the need for cold outreach.",
+            "Deployed automated multi-touch outreach sequences for all three buyer personas. Integrated Clay for prospect enrichment and Instantly for campaign management. Qualification layer built to filter leads before partner contact.",
         },
       ],
     },
@@ -185,7 +185,7 @@ export const caseStudies: CaseStudy[] = [
         },
         {
           week: "Month 2",
-          milestone: "All sequences live, LinkedIn programme active, first inbound enquiries from content",
+          milestone: "All outreach sequences live, first qualified responses entering pipeline, partner hours on sales reduced from 30hr/week to 14hr/week",
         },
         {
           week: "Month 3",
@@ -194,7 +194,7 @@ export const caseStudies: CaseStudy[] = [
         },
         {
           week: "Month 4–5",
-          milestone: "Content programme driving consistent inbound, average deal size increased 133%",
+          milestone: "Outbound system at full operating rhythm, average deal size increased 133%, inbound referrals up from increased market visibility",
         },
         {
           week: "Month 6",
@@ -220,8 +220,8 @@ export const caseStudies: CaseStudy[] = [
         body: "Talented people doing repetitive tasks is the most expensive way to run a business. When partners are spending their best hours on data entry and follow-up reminders, the ceiling is low. Systems create leverage.",
       },
       {
-        title: "Content is the highest-ROI activity for professional services.",
-        body: "Thought leadership content generated 18 inbound leads per month within four months, up from zero. These leads arrived pre-qualified and with higher intent than anything cold outreach produced. The cost per lead was a fraction of outbound.",
+        title: "Automation creates leverage for senior teams.",
+        body: "When the prospecting, follow-up, and data entry is automated, senior partners get their time back. 22 hours per week returned to billable and strategic work produced far more revenue growth than any additional salesperson would have.",
       },
       {
         title: "Visibility changes behaviour.",
@@ -232,97 +232,102 @@ export const caseStudies: CaseStudy[] = [
 
   {
     slug: "dtc-consumer-brand",
-    company: "DTC Consumer Brand",
-    industry: "E-Commerce",
-    category: "DTC Consumer Brand",
+    company: "B2B Payments Platform",
+    industry: "B2B FinTech",
+    category: "B2B Payments · Series A",
     period: "4 months",
     tagline:
-      "CAC reduced from $320 to $84 by replacing paid acquisition with an owned content and email infrastructure.",
-    heroMetric: { value: "$84", label: "Customer acquisition cost" },
+      "From no outbound motion to 52 qualified meetings per month and $740K pipeline in 4 months.",
+    heroMetric: { value: "52", label: "Qualified meetings / month" },
     summary:
-      "This brand had grown to $2M in annual revenue entirely on paid social. When iOS privacy changes and rising CPMs made their unit economics unsustainable, they needed a new customer acquisition strategy built on owned assets. Meridian built the content and email infrastructure that shifted their growth from rented to owned.",
+      "This Series A payments platform had strong product-market fit within their existing network but no structured way to reach beyond it. Pipeline was unpredictable and entirely dependent on founder relationships. Meridian built a full outbound infrastructure targeting CFOs and finance leads at mid-market companies — taking them from 4 qualified meetings per month to 52 in under four months.",
     challenge: {
       overview:
-        "The brand's customer acquisition had been a single-channel bet on Facebook and Instagram ads since launch. It worked until it didn't. By mid-2024, rising CPMs had pushed CAC above $320, compressing margins to the point where growth was becoming unprofitable. The brand had no email list worth speaking of, no content presence, and no loyalty programme.",
+        "The company had closed their first eight customers through founder relationships and warm introductions. That network was running dry. The sales team had no outbound process, no verified prospect lists, and no infrastructure for cold outreach. Every quarter was a guessing game.",
       bullets: [
-        "Customer acquisition cost of $320, up from $95 eighteen months prior",
-        "Email list of 1,200, mostly inactive with no segmentation or automation",
-        "Zero organic search presence. All traffic was paid or direct.",
-        "No referral mechanism despite a 68% repeat purchase rate",
-        "Content production: 2 posts per month, ad-hoc, no strategy",
+        "4 qualified meetings per month — all from existing relationships",
+        "No outbound process. Zero cold email infrastructure in place.",
+        "No ICP definition. Team was reaching out to any company that seemed relevant.",
+        "CRM had less than 200 contacts with no enrichment or lead scoring",
+        "Sales cycle averaging 110 days due to late-stage qualification",
       ],
     },
     strategy: {
       overview:
-        "The strategy was to rebuild acquisition from the bottom up around owned assets: email, content, and referral. Rather than competing on paid channels with escalating budgets, we designed a system that compounded over time. The goal was a self-reinforcing loop: content builds audience → audience builds email list → email list drives sales → customers become advocates.",
+        "Before deploying a single email, we spent two weeks defining the ICP with precision: company size, tech stack indicators, growth signals, and the specific buyer title most likely to champion the product. The strategy was multi-domain cold email targeting two buyer personas simultaneously — CFOs and VP Finance — with separate sequences and value propositions.",
       phases: [
         {
-          name: "Phase 1: Email Infrastructure",
+          name: "Phase 1: ICP & Infrastructure",
           detail:
-            "Built a Klaviyo system from scratch with welcome series, abandonment flows, post-purchase nurture, and VIP segmentation. Rebuilt the sign-up incentive to convert at three times the previous rate.",
+            "Two-week ICP definition sprint followed by cold email infrastructure setup. Three sending domains configured and warmed. Apollo and Clay deployed for prospect research and data enrichment.",
         },
         {
-          name: "Phase 2: Content Operating System",
+          name: "Phase 2: Campaign Deployment",
           detail:
-            "Designed and launched a content machine producing 18 pieces per month across LinkedIn, email, and SEO. Each piece aligned to a buyer journey stage and linked to a trackable conversion goal.",
+            "Launched two parallel campaigns targeting CFO and VP Finance personas. 7-touch sequences with A/B tested subject lines. Smartlead deployed for sending management and deliverability monitoring.",
         },
         {
-          name: "Phase 3: Referral Engine",
+          name: "Phase 3: Qualification & Routing",
           detail:
-            "Launched a structured referral programme leveraging the 68% repeat buyer base. Integrated with Klaviyo post-purchase flows. Within 60 days, referral became the second-largest acquisition channel.",
+            "Claude qualification layer built to score positive replies against ICP criteria. Qualified leads routed directly into HubSpot with deal stage pre-set and context attached. Sales cycle reduced by 50 days as a result.",
         },
       ],
     },
     execution: {
       overview:
-        "The first month was entirely backend work. No content visible to customers. We rebuilt email before we wrote a word of content. This is counter-intuitive but critical: traffic without a capture and nurture mechanism is wasted. By month two, the email list was growing at 400 subscribers per week.",
+        "The first three weeks were entirely infrastructure: domains, data, and sequence writing. No outreach went out until the system was fully tested. By week four, the first campaign was live. By week eight, both personas were running at full volume with daily lead flow into the CRM.",
       steps: [
         {
-          week: "Month 1",
+          week: "Weeks 1–2",
           milestone:
-            "Klaviyo rebuild, welcome and abandonment flows live, new sign-up incentive deployed",
+            "ICP definition, domain setup and warming, Apollo/Clay deployment, prospect lists built",
         },
         {
-          week: "Month 2",
+          week: "Weeks 3–4",
           milestone:
-            "Content programme live (18/mo), email list growing 400/week, referral programme soft-launched",
+            "Sequences written and approved, Smartlead configured, first CFO campaign launched",
+        },
+        {
+          week: "Weeks 5–6",
+          milestone:
+            "VP Finance campaign launched, Claude qualification layer live, first qualified meetings booked",
         },
         {
           week: "Month 3",
           milestone:
-            "Referral 2nd-largest acquisition channel, organic search traffic +180%, email revenue 28% of total",
+            "Both campaigns at full volume, 28 qualified meetings in the month, HubSpot pipeline active",
         },
         {
           week: "Month 4",
           milestone:
-            "CAC at $84 blended, paid spend reduced by 40% while maintaining revenue growth",
+            "52 qualified meetings, $740K pipeline value, sales cycle down to 58 days",
         },
       ],
     },
     results: {
       overview:
-        "Four months after starting, the brand's blended CAC had dropped from $320 to $84. Email had become a primary revenue channel generating 28% of monthly sales. The referral programme was responsible for 22% of new customers. The business was no longer dependent on paid ads. For the first time in its history.",
+        "Four months in, the company had a fully operational outbound system generating 52 qualified meetings per month. Pipeline had grown from near-zero to $740K. The sales team was working qualified, context-rich leads — not chasing cold contacts. The founder was no longer the primary driver of new pipeline.",
     },
     metrics: [
-      { label: "Customer acquisition cost", before: "$320", after: "$84" },
-      { label: "Email subscribers", before: "1,200", after: "9,800" },
-      { label: "Email % of revenue", before: "3%", after: "28%" },
-      { label: "Organic leads / month", before: "22", after: "148" },
-      { label: "Content pieces / month", before: "2", after: "18" },
-      { label: "Referral new customers", before: "0%", after: "22%" },
+      { label: "Qualified meetings / month", before: "4", after: "52" },
+      { label: "Pipeline value", before: "$90K", after: "$740K" },
+      { label: "Response rate", before: "2%", after: "14%" },
+      { label: "Prospects contacted / month", before: "40", after: "620" },
+      { label: "Sales cycle (days)", before: "110", after: "58" },
+      { label: "Founder hours on BD / week", before: "18h", after: "4h" },
     ],
     lessons: [
       {
-        title: "Own your audience before you scale acquisition.",
-        body: "Brands that rely entirely on paid channels are renting their customers from platforms that can reprice access at any time. An email list of 10,000 engaged subscribers is a durable asset that no algorithm change can take away.",
+        title: "Cold email infrastructure is not optional.",
+        body: "Most companies try cold email with a single domain and generic copy, get poor results, and conclude it doesn't work. The problem is never the channel — it's the absence of proper domain setup, warm-up, deliverability management, and sequence strategy. Infrastructure first.",
       },
       {
-        title: "Build the infrastructure before the content.",
-        body: "Most brands start writing content without a system to capture, nurture, and convert the audience it builds. We always build the conversion infrastructure first. Content without capture is wasted momentum.",
+        title: "Qualification at entry changes everything downstream.",
+        body: "Building a qualification layer that scored replies before any human contact reduced the average sales cycle from 110 to 58 days. Reps spent time on leads that could actually close. That alone justified the entire engagement.",
       },
       {
-        title: "Your best customers are your best acquisition channel.",
-        body: "With a 68% repeat purchase rate (clear evidence of a product people loved), a referral programme that captures this loyalty is, cost-for-cost, the highest-performing acquisition channel available. Most brands never build one.",
+        title: "Founder-dependent pipeline has a ceiling.",
+        body: "Every company that scales past a certain point does so because they replaced founder-driven sales with a repeatable system. The transition is uncomfortable. It's also necessary. The sooner it happens, the longer the compounding runway.",
       },
     ],
   },

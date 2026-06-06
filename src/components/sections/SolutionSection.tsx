@@ -8,45 +8,52 @@ const id = "solutions";
 const steps = [
   {
     stage: "01",
-    title: "Research & Intelligence",
+    title: "Prospect Identification",
     description:
-      "Deep market research, ICP definition, and competitive analysis. We identify exactly who to target and why they should care.",
-    tags: ["ICP Mapping", "Market Research", "Positioning"],
+      "ICP definition, target account research, and buyer persona mapping. We define exactly who to reach and build the targeting criteria your outreach will run against.",
+    tags: ["ICP Mapping", "Apollo", "Clay"],
   },
   {
     stage: "02",
-    title: "Content Production",
+    title: "List Building & Verification",
     description:
-      "High-signal content that builds authority and drives inbound interest. Written, distributed, and tracked against outcomes.",
-    tags: ["Copywriting", "LinkedIn", "Email Sequences"],
+      "Verified prospect lists built to spec. Contact data enriched, validated, and deduplicated before a single email is sent.",
+    tags: ["Data Enrichment", "Email Verification", "Clay"],
   },
   {
     stage: "03",
-    title: "Lead Capture & Qualification",
+    title: "Campaign Deployment",
     description:
-      "Multi-channel outbound with automated qualification flows. Only decision-ready leads pass through to your team.",
-    tags: ["Outbound", "Lead Scoring", "Automation"],
+      "Multi-domain cold email infrastructure with 7-touch sequences per persona. Inboxes warmed. Sending limits managed. Deliverability monitored.",
+    tags: ["Instantly", "Smartlead", "Cold Email"],
   },
   {
     stage: "04",
-    title: "CRM & Pipeline Management",
+    title: "Lead Response Management",
     description:
-      "Structured CRM setup, deal stage tracking, and activity logging so nothing falls through the cracks.",
-    tags: ["CRM Build", "Pipeline", "Reporting"],
+      "Every reply is categorized, sorted, and routed. Positive replies escalated immediately. Negative replies removed. Out-of-office handled automatically.",
+    tags: ["Reply Handling", "Categorization", "Routing"],
   },
   {
     stage: "05",
-    title: "Sales Enablement",
+    title: "Lead Qualification",
     description:
-      "Scripts, objection handling, proposal templates, and discovery frameworks that improve close rates.",
-    tags: ["Discovery Calls", "Proposals", "Closing"],
+      "Claude-powered qualification layer scores every interested lead against your ICP and deal criteria before any human contact.",
+    tags: ["Claude AI", "Lead Scoring", "Qualification"],
   },
   {
     stage: "06",
+    title: "CRM Routing",
+    description:
+      "Qualified leads flow directly into your CRM with full context attached. Deal stage set, owner assigned, follow-up task created automatically.",
+    tags: ["HubSpot", "Salesforce", "Auto-routing"],
+  },
+  {
+    stage: "07",
     title: "Revenue Tracking",
     description:
-      "Real-time dashboards connecting activity to revenue. Full attribution across every channel and touchpoint.",
-    tags: ["Attribution", "Dashboards", "Forecasting"],
+      "Full attribution from first touch to closed deal. Which campaigns, sequences, and personas are generating revenue — and which aren't.",
+    tags: ["Attribution", "Pipeline", "Reporting"],
   },
 ];
 
@@ -65,11 +72,12 @@ export function SolutionSection() {
             The solution
           </p>
           <h2 className="text-[36px] font-bold tracking-[-0.025em] text-[#111111] mb-4 max-w-[540px] leading-tight">
-            The Meridian Revenue Operating System
+            Outbound Revenue Infrastructure
           </h2>
           <p className="text-[16px] text-[#6b7280] max-w-[480px] leading-relaxed">
-            A fully integrated set of systems that work together, from first
-            impression to closed deal and beyond.
+            A systematic acquisition pipeline that takes a prospect from
+            identification to qualified meeting — built, deployed, and operated
+            by Meridian.
           </p>
         </motion.div>
 

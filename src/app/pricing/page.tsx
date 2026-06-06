@@ -7,119 +7,123 @@ import { Footer } from "@/components/Footer";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Transparent, outcome-based pricing for revenue operating systems. Silver from $1,500/mo. No lock-in contracts.",
+    "Transparent, outcome-based pricing for outbound revenue infrastructure. Outbound Foundation from $1,500/mo. No lock-in contracts.",
 };
 
 const tiers = [
   {
-    name: "Silver",
+    name: "Outbound Foundation",
+    badge: "Silver",
     price: "$1,500",
     period: "/mo",
-    for: "Early-stage businesses building their first structured revenue system.",
+    for: "B2B companies building their first structured outbound acquisition system.",
     overview:
-      "For founders and small teams still running sales manually who need the infrastructure to make growth predictable. This tier deploys a foundational outbound system and CRM setup. Enough to create pipeline visibility and start filling it.",
+      "For founders and sales teams running outreach manually who need real infrastructure to make pipeline predictable. This tier builds the foundational outbound system: ICP, verified lists, multi-touch campaigns, and CRM routing. Enough to create consistent qualified meeting flow.",
     deliverables: [
-      "Full ICP definition & buyer persona research",
-      "2 active outbound campaigns (email-first)",
-      "7-touch email sequence per persona",
-      "Automated lead qualification workflow",
-      "CRM setup & hygiene (up to 5 users)",
-      "Performance reporting dashboard",
-      "Monthly strategy call (60 min)",
-      "Campaign copy & messaging templates",
+      "ICP definition & buyer persona research",
+      "Verified prospect lists (built to spec)",
+      "2 cold email domains (configured & warmed)",
+      "2 active outreach campaigns",
+      "7-touch email sequences per persona",
+      "CRM routing setup",
+      "Monthly optimization review",
+      "Monthly performance reporting",
     ],
     outcomes: [
-      "20–50 qualified leads per month by month 3",
-      "Structured, visible, trackable pipeline",
-      "Reduction of 4–6 hours/week in manual sales work",
-      "Clear ICP that the whole team aligns to",
+      "20–40 qualified meetings per month by month 3",
+      "Structured, visible, and trackable pipeline",
+      "Reduction of 8–12 hours/week in manual prospecting",
+      "Verified ICP that the whole team aligns to",
     ],
     support: "Email support (M–F, 24h response) · Monthly review call",
-    upgrade: "Upgrade to Gold when pipeline exceeds 40 leads/month or you're ready to add content and multi-channel outreach.",
+    upgrade: "Upgrade to Revenue Infrastructure when pipeline exceeds 40 meetings/month or you need qualification automation and multi-domain scale.",
     highlight: false,
     cta: "Start with Silver",
+    ctaHref: "/get-started",
   },
   {
-    name: "Gold",
+    name: "Revenue Infrastructure",
+    badge: "Gold",
     price: "$4,500",
     period: "/mo",
-    for: "Growing businesses with product-market fit, ready to operate at scale.",
+    for: "Revenue-focused teams ready to scale pipeline with full outbound infrastructure.",
     overview:
-      "For companies that need more than outbound. Think content, multi-channel sequences, and a sales process that runs without constant hand-holding. This tier builds the full commercial infrastructure and operates it with you on a weekly basis.",
+      "For companies that need more than basic outbound. Think multi-domain infrastructure, automated lead qualification, reply categorization, and a system that routes sales-ready leads directly into your CRM. This tier operates the full outbound engine with weekly optimization cycles.",
     deliverables: [
-      "Everything in Silver",
-      "5 active campaigns (email, LinkedIn, referral)",
-      "Content production: 8 pieces per month",
-      "LinkedIn outreach sequences",
-      "Advanced lead scoring & segmentation",
-      "Sales enablement scripts & objection handling guide",
-      "Revenue attribution dashboards by channel",
-      "Weekly strategy calls (30 min)",
+      "Everything in Outbound Foundation",
+      "5 active campaigns",
+      "Multi-domain infrastructure",
+      "Claude lead qualification layer",
+      "Reply categorization & routing",
+      "Automated CRM routing with context",
+      "Sales enablement frameworks",
+      "Revenue attribution dashboard",
+      "Weekly optimization reviews",
       "Dedicated account manager",
-      "A/B testing framework",
     ],
     outcomes: [
-      "60–100 qualified leads per month",
-      "15–25% improvement in close rate",
-      "Full pipeline visibility and weekly reporting",
-      "Content driving inbound alongside outbound",
+      "50–100 qualified meetings per month",
+      "Automated qualification reducing sales cycle by 30–50%",
+      "Full pipeline visibility with weekly attribution reporting",
+      "Sales team working pre-qualified, context-rich leads only",
     ],
     support: "Dedicated Slack channel · Weekly syncs · 4h response SLA",
-    upgrade: "Upgrade to Platinum for executive-level infrastructure, paid media, and SDR support.",
+    upgrade: "Upgrade to Enterprise for custom automation, advanced CRM integrations, and dedicated strategy support.",
     highlight: true,
     cta: "Start with Gold",
+    ctaHref: "/get-started",
   },
   {
-    name: "Platinum",
+    name: "Enterprise",
+    badge: "Enterprise",
     price: "Custom",
     period: "",
-    for: "Established businesses building enterprise-grade revenue infrastructure.",
+    for: "Companies requiring deeper automation, CRM integrations, and multi-channel acquisition systems.",
     overview:
-      "For companies at $5M+ ARR or those that need the full stack: paid media, fractional SDR support, executive reporting, and custom integrations. Platinum is scoped individually based on your business size, existing systems, and growth targets.",
+      "Custom revenue infrastructure scoped to your business. For companies with complex CRM environments, multi-channel acquisition needs, or requiring dedicated strategy and onboarding support beyond standard tiers.",
     deliverables: [
       "Everything in Gold",
-      "Unlimited campaigns",
-      "Full content operating system (18+ pieces/mo)",
-      "Paid media management (LinkedIn, Google)",
-      "Fractional SDR / BDR support",
-      "Executive revenue reporting & board-ready dashboards",
-      "Quarterly business reviews with leadership",
-      "Custom CRM integrations (Salesforce, Marketo, etc.)",
-      "White-glove onboarding (2-week deployment)",
-      "Monthly strategic advisory session (2 hrs)",
+      "Multi-workflow automation",
+      "Advanced CRM integrations",
+      "Custom reporting & attribution",
+      "Dedicated strategy support",
+      "Enterprise onboarding & consulting",
     ],
     outcomes: [
-      "Enterprise-scale pipeline, scoped to your targets",
-      "Full revenue attribution across every channel",
-      "Board-level reporting infrastructure",
-      "A system that runs with or without us",
+      "Custom pipeline targets scoped to your business",
+      "Full-stack automation across every acquisition channel",
+      "Board-level attribution and reporting infrastructure",
+      "A system that runs independently long-term",
     ],
     support: "Dedicated Slack + on-call · Guaranteed SLA · Direct senior team access",
-    upgrade: "No upgrade needed. This is the complete operating system.",
+    upgrade: "No upgrade path — this is the complete operating system.",
     highlight: false,
-    cta: "Book a Call",
+    cta: "Schedule Strategy Call",
+    ctaHref: "/book",
   },
 ];
 
 const comparisonRows = [
-  { feature: "ICP definition & research", silver: true, gold: true, platinum: true },
-  { feature: "Active outbound campaigns", silver: "2", gold: "5", platinum: "Unlimited" },
-  { feature: "Email sequences", silver: "1", gold: "3+", platinum: "Unlimited" },
-  { feature: "LinkedIn outreach", silver: false, gold: true, platinum: true },
-  { feature: "Lead qualification workflow", silver: true, gold: true, platinum: true },
-  { feature: "CRM setup & management", silver: true, gold: true, platinum: true },
-  { feature: "Content production", silver: false, gold: "8 pieces/mo", platinum: "18+ pieces/mo" },
-  { feature: "Lead scoring & segmentation", silver: false, gold: true, platinum: true },
-  { feature: "Revenue attribution dashboards", silver: false, gold: true, platinum: true },
-  { feature: "Sales enablement scripts", silver: false, gold: true, platinum: true },
-  { feature: "Paid media management", silver: false, gold: false, platinum: true },
-  { feature: "Fractional SDR support", silver: false, gold: false, platinum: true },
-  { feature: "Executive reporting", silver: false, gold: false, platinum: true },
-  { feature: "Custom integrations", silver: false, gold: false, platinum: true },
-  { feature: "Strategy calls", silver: "Monthly", gold: "Weekly", platinum: "Weekly + advisory" },
-  { feature: "Account manager", silver: false, gold: true, platinum: true },
-  { feature: "Slack channel", silver: false, gold: true, platinum: true },
-  { feature: "Response SLA", silver: "24h", gold: "4h", platinum: "Guaranteed" },
+  { feature: "ICP definition & research", silver: true, gold: true, enterprise: true },
+  { feature: "Verified prospect lists", silver: true, gold: true, enterprise: true },
+  { feature: "Cold email domains", silver: "2", gold: "5+", enterprise: "Custom" },
+  { feature: "Active outbound campaigns", silver: "2", gold: "5", enterprise: "Unlimited" },
+  { feature: "Email sequences (7-touch)", silver: true, gold: true, enterprise: true },
+  { feature: "Multi-domain infrastructure", silver: false, gold: true, enterprise: true },
+  { feature: "Multi-workflow automation", silver: false, gold: false, enterprise: true },
+  { feature: "Claude lead qualification", silver: false, gold: true, enterprise: true },
+  { feature: "Reply categorization & routing", silver: false, gold: true, enterprise: true },
+  { feature: "CRM routing setup", silver: true, gold: true, enterprise: true },
+  { feature: "Advanced CRM integrations", silver: false, gold: false, enterprise: true },
+  { feature: "Sales enablement frameworks", silver: false, gold: true, enterprise: true },
+  { feature: "Revenue attribution dashboard", silver: false, gold: true, enterprise: true },
+  { feature: "Custom reporting & attribution", silver: false, gold: false, enterprise: true },
+  { feature: "Optimization reviews", silver: "Monthly", gold: "Weekly", enterprise: "Weekly" },
+  { feature: "Dedicated strategy support", silver: false, gold: false, enterprise: true },
+  { feature: "Enterprise onboarding & consulting", silver: false, gold: false, enterprise: true },
+  { feature: "Account manager", silver: false, gold: true, enterprise: true },
+  { feature: "Slack channel", silver: false, gold: true, enterprise: true },
+  { feature: "Response SLA", silver: "24h", gold: "4h", enterprise: "Guaranteed" },
 ];
 
 function CellValue({ value }: { value: boolean | string }) {
@@ -177,7 +181,10 @@ export default function PricingPage() {
                   </div>
                 )}
                 <div className="p-8 border-b border-white/10 flex-1">
-                  <p className={`text-[11px] font-semibold uppercase tracking-widest mb-4 ${tier.highlight ? "text-[#9ca3af]" : "text-[#6b7280]"}`}>
+                  <p className={`text-[11px] font-semibold uppercase tracking-widest mb-1.5 ${tier.highlight ? "text-[#9ca3af]" : "text-[#6b7280]"}`}>
+                    {tier.badge}
+                  </p>
+                  <p className={`text-[18px] font-bold mb-3 ${tier.highlight ? "text-white" : "text-[#111111]"}`}>
                     {tier.name}
                   </p>
                   <div className="flex items-baseline gap-1 mb-3">
@@ -209,7 +216,7 @@ export default function PricingPage() {
                 </div>
                 <div className="p-8">
                   <Link
-                    href={tier.price === "Custom" ? "/book" : "/get-started"}
+                    href={tier.ctaHref}
                     className={`flex items-center justify-center gap-2 py-2.5 rounded-md text-[14px] font-medium transition-colors ${
                       tier.highlight
                         ? "bg-white text-[#111111] hover:bg-[#f3f4f6]"
@@ -230,29 +237,22 @@ export default function PricingPage() {
               What&apos;s included in each tier
             </h2>
             <div className="space-y-6">
-              {tiers.map((tier, i) => (
+              {tiers.map((tier) => (
                 <div key={tier.name} className="border border-[#e5e7eb] rounded-xl overflow-hidden">
                   <div className="px-8 py-6 border-b border-[#e5e7eb] bg-[#fafafa] flex items-center justify-between flex-wrap gap-4">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-widest text-[#9ca3af] mb-1">
-                        {["Entry", "Growth", "Enterprise"][i]}
+                        {tier.badge}
                       </p>
                       <h3 className="text-[20px] font-bold text-[#111111] tracking-tight">
                         {tier.name}
-                        {tier.period && (
-                          <span className="text-[16px] font-normal text-[#6b7280] ml-2">
-                            {tier.price}{tier.period}
-                          </span>
-                        )}
-                        {!tier.period && (
-                          <span className="text-[16px] font-normal text-[#6b7280] ml-2">
-                            Custom pricing
-                          </span>
-                        )}
+                        <span className="text-[16px] font-normal text-[#6b7280] ml-2">
+                          {tier.price}{tier.period}
+                        </span>
                       </h3>
                     </div>
                     <Link
-                      href={tier.price === "Custom" ? "/book" : "/get-started"}
+                      href={tier.ctaHref}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-[#111111] text-white text-[13px] font-medium rounded-md hover:bg-[#1a1a1a] transition-colors"
                     >
                       {tier.cta}
@@ -324,7 +324,7 @@ export default function PricingPage() {
               {/* Table header */}
               <div className="grid grid-cols-[1fr_100px_100px_100px] border-b border-[#e5e7eb] bg-[#fafafa]">
                 <div className="px-6 py-3.5" />
-                {["Silver", "Gold", "Platinum"].map((tier, i) => (
+                {["Silver", "Gold", "Enterprise"].map((tier, i) => (
                   <div key={tier} className={`px-4 py-3.5 text-center border-l border-[#e5e7eb] ${i === 1 ? "bg-[#111111]" : ""}`}>
                     <span className={`text-[12px] font-semibold ${i === 1 ? "text-white" : "text-[#111111]"}`}>
                       {tier}
@@ -343,7 +343,7 @@ export default function PricingPage() {
                   <div className="px-6 py-3 flex items-center">
                     <span className="text-[13px] text-[#374151]">{row.feature}</span>
                   </div>
-                  {[row.silver, row.gold, row.platinum].map((val, j) => (
+                  {[row.silver, row.gold, row.enterprise].map((val, j) => (
                     <div
                       key={j}
                       className={`px-4 py-3 flex items-center justify-center border-l border-[#e5e7eb] ${

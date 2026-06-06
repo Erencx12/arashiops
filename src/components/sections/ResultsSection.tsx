@@ -35,18 +35,18 @@ const cases = [
     ],
   },
   {
-    industry: "DTC E-Commerce",
-    company: "DTC Consumer Brand",
+    industry: "B2B FinTech",
+    company: "B2B Payments Platform",
     period: "4 months",
     challenge:
-      "CAC from paid channels had hit an unsustainable ceiling. The brand needed to build an owned audience without depending entirely on ad spend.",
+      "The company had strong product-market fit within their existing network but no outbound motion to reach the wider mid-market. Pipeline was entirely inbound and unpredictable.",
     approach:
-      "Built a content operating system producing 18 pieces of content per month. Combined LinkedIn authority content with a high-frequency email programme and referral incentive structure.",
+      "Built a full outbound infrastructure targeting CFOs and finance leads at mid-market companies. Deployed multi-domain email campaigns with Claude-powered qualification and direct CRM routing.",
     metrics: [
-      { label: "Organic Leads / mo", before: "22", after: "148" },
-      { label: "Email Subscribers", before: "1,200", after: "9,800" },
-      { label: "Customer CAC", before: "$320", after: "$84" },
-      { label: "Content Output / mo", before: "2", after: "18" },
+      { label: "Qualified Meetings / mo", before: "4", after: "52" },
+      { label: "Pipeline Value", before: "$90K", after: "$740K" },
+      { label: "Response Rate", before: "2%", after: "14%" },
+      { label: "Prospects Contacted / mo", before: "40", after: "620" },
     ],
   },
 ];

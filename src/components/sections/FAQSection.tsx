@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: "What makes Meridian different from a marketing agency?",
-    a: "Traditional agencies sell individual services in isolation: ads, content, campaigns. We build operating infrastructure. A connected system where each component feeds the next, with full revenue attribution. We measure ourselves against pipeline and closed revenue, not vanity metrics.",
+    a: "Traditional agencies sell individual services in isolation: ads, SEO, campaigns. We build outbound acquisition infrastructure. A systematic pipeline that takes a target account from identification to qualified meeting, with full revenue attribution. We measure ourselves against pipeline and closed revenue, not vanity metrics.",
   },
   {
     q: "How involved do we need to be?",

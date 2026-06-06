@@ -6,9 +6,9 @@ import { Badge } from "@/components/dashboard/Badge";
 import type { DbAgentTask, AgentName } from "@/lib/db-types";
 
 const agents: { name: AgentName; role: string; description: string }[] = [
-  { name: "Claude CEO", role: "Strategy & Intelligence", description: "ICP analysis, onboarding briefs, competitive research, and strategic playbooks." },
-  { name: "Claude CMO", role: "Content & Campaigns",    description: "Email sequences, LinkedIn content, campaign briefs, and creative scripts." },
-  { name: "Claude CFO", role: "Finance & Analytics",    description: "Revenue attribution, financial baselines, reporting, and pipeline analysis." },
+  { name: "Claude CEO", role: "Strategy & Intelligence", description: "ICP analysis, onboarding briefs, competitive research, and target account identification." },
+  { name: "Claude CMO", role: "Outbound & Campaigns",   description: "Email sequence writing, campaign deployment, prospect list curation, and reply management." },
+  { name: "Claude CFO", role: "Finance & Analytics",    description: "Revenue attribution, pipeline reporting, deal stage analysis, and forecasting." },
 ];
 
 const statusIcon = {
