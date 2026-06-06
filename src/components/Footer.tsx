@@ -31,7 +31,7 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <LogoMark size="sm" />
-              <span className="text-[14px] font-semibold text-[#111111]">Meridian</span>
+              <span className="text-[14px] font-semibold text-[#111111]">Arashi OPS</span>
             </div>
             <p className="text-[13px] text-[#9ca3af] leading-relaxed max-w-[240px] mb-4">
               The revenue operating system for ambitious B2B businesses.
@@ -69,7 +69,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-5">
           <p className="text-[12px] text-[#9ca3af]">
-            © {new Date().getFullYear()} Meridian. All rights reserved.
+            © {new Date().getFullYear()} Arashi OPS. All rights reserved.
           </p>
           <p className="text-[12px] text-[#9ca3af]">
             The Revenue Operating System

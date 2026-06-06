@@ -42,7 +42,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <p className="text-[14px] font-semibold text-[#111111]">Soham Das</p>
-              <p className="text-[12.5px] text-[#9ca3af]">Owner · Meridian</p>
+              <p className="text-[12.5px] text-[#9ca3af]">Owner · Arashi OPS</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -56,7 +56,7 @@ export default function SettingsPage() {
         {/* Agency */}
         <Section title="Agency Details">
           <div className="space-y-4">
-            <Field label="Agency name" value="Meridian" />
+            <Field label="Agency name" value="Arashi OPS" />
             <Field label="Website" value="https://meridian.co" />
             <div className="grid grid-cols-2 gap-4">
               <Field label="Default tier" value="Gold" />

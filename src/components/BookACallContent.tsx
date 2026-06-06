@@ -21,7 +21,7 @@ const whyPoints = [
   {
     icon: Users,
     title: "Founder-to-operator conversation",
-    body: "You speak directly with Meridian's senior strategists. No account executives, no pre-sales reps.",
+    body: "You speak directly with Arashi OPS's senior strategists. No account executives, no pre-sales reps.",
   },
 ];
 
@@ -29,7 +29,7 @@ const agendaItems = [
   "Your current revenue model and what's working",
   "The specific bottlenecks holding back growth",
   "Your goals for the next 6–12 months",
-  "An honest assessment of where Meridian adds value",
+  "An honest assessment of where Arashi OPS adds value",
   "What a system deployment would look like for your business",
 ];
 

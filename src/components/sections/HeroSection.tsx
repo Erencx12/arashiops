@@ -35,7 +35,7 @@ export function HeroSection() {
             </h1>
 
             <p className="text-[17px] text-[#6b7280] leading-[1.7] mb-8 max-w-[460px]">
-              Meridian builds the operational infrastructure that connects
+              Arashi OPS builds the operational infrastructure that connects
               marketing, sales, and CRM into a single, measurable growth engine.
               Not a retainer. A system.
             </p>

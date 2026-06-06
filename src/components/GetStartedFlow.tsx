@@ -315,7 +315,7 @@ export function GetStartedFlow() {
         <div className="max-w-[720px] mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
             <LogoMark size="sm" />
-            <span className="text-[14px] font-semibold text-[#111111]">Meridian</span>
+            <span className="text-[14px] font-semibold text-[#111111]">Arashi OPS</span>
           </Link>
           <StepIndicator current={step} />
         </div>
@@ -749,7 +749,7 @@ function ConfirmationScreen({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[12.5px] text-[#6b7280]">With</span>
-              <span className="text-[12.5px] font-medium text-[#111111]">Meridian Strategy Team</span>
+              <span className="text-[12.5px] font-medium text-[#111111]">Arashi OPS Strategy Team</span>
             </div>
           </div>
         </div>
@@ -775,7 +775,7 @@ function ConfirmationScreen({
           href="/"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#111111] text-white text-[14px] font-medium rounded-md hover:bg-[#1a1a1a] transition-colors"
         >
-          Back to Meridian
+          Back to Arashi OPS
         </Link>
       </motion.div>
     </div>

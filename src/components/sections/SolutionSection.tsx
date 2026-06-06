@@ -77,7 +77,7 @@ export function SolutionSection() {
           <p className="text-[16px] text-[#6b7280] max-w-[480px] leading-relaxed">
             A systematic acquisition pipeline that takes a prospect from
             identification to qualified meeting — built, deployed, and operated
-            by Meridian.
+            by Arashi OPS.
           </p>
         </motion.div>
 

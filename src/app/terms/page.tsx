@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "Terms and conditions governing use of Meridian services.",
+  description: "Terms and conditions governing use of Arashi OPS services.",
 };
 
 export default function TermsPage() {
@@ -27,7 +27,7 @@ export default function TermsPage() {
           <div className="space-y-10">
             <Section title="Acceptance of Terms">
               <p>
-                By accessing or using the Meridian website or services, you agree to be bound by
+                By accessing or using the Arashi OPS website or services, you agree to be bound by
                 these Terms of Service. If you do not agree to these terms, please do not use our
                 website or services.
               </p>
@@ -40,13 +40,13 @@ export default function TermsPage() {
 
             <Section title="Services">
               <p>
-                Meridian provides revenue operations consulting and implementation services to
+                Arashi OPS provides revenue operations consulting and implementation services to
                 business clients. Our services include but are not limited to lead generation
                 systems, sales infrastructure design, content operations, and CRM implementation.
               </p>
               <p>
                 Specific services, deliverables, timelines, and pricing are governed by separate
-                engagement agreements or statements of work entered into between Meridian and each
+                engagement agreements or statements of work entered into between Arashi OPS and each
                 client.
               </p>
             </Section>
@@ -70,19 +70,19 @@ export default function TermsPage() {
             <Section title="Intellectual Property">
               <p>
                 All content on this website — including text, graphics, logos, and software — is
-                the property of Meridian or its content suppliers and protected by applicable
+                the property of Arashi OPS or its content suppliers and protected by applicable
                 intellectual property laws.
               </p>
               <p>
                 You may not reproduce, distribute, modify, create derivative works, publicly display,
                 or exploit any content from this website without prior written permission from
-                Meridian.
+                Arashi OPS.
               </p>
             </Section>
 
             <Section title="Confidentiality">
               <p>
-                Any information you provide to Meridian in the course of exploring or engaging our
+                Any information you provide to Arashi OPS in the course of exploring or engaging our
                 services is treated as confidential and will not be shared with third parties without
                 your consent, except as required by law or to provide the services you have
                 requested.
@@ -92,7 +92,7 @@ export default function TermsPage() {
             <Section title="Disclaimers">
               <p>
                 Our website and services are provided &ldquo;as is&rdquo; without warranties of any kind,
-                either express or implied. Meridian does not warrant that our services will meet
+                either express or implied. Arashi OPS does not warrant that our services will meet
                 your specific requirements, be uninterrupted, or be error-free.
               </p>
               <p>
@@ -104,7 +104,7 @@ export default function TermsPage() {
 
             <Section title="Limitation of Liability">
               <p>
-                To the maximum extent permitted by applicable law, Meridian shall not be liable for
+                To the maximum extent permitted by applicable law, Arashi OPS shall not be liable for
                 any indirect, incidental, special, consequential, or punitive damages arising from
                 your use of our website or services, even if we have been advised of the possibility
                 of such damages.
@@ -132,7 +132,7 @@ export default function TermsPage() {
                 Questions about these Terms should be directed to:
               </p>
               <address className="not-italic">
-                <p className="font-medium text-[#111111]">Meridian</p>
+                <p className="font-medium text-[#111111]">Arashi OPS</p>
                 <p>
                   Email:{" "}
                   <a href="mailto:legal@meridian.co" className="text-[#4f46e5] hover:underline">
@@ -148,7 +148,7 @@ export default function TermsPage() {
               href="/"
               className="text-[13.5px] text-[#6b7280] hover:text-[#111111] transition-colors"
             >
-              ← Back to Meridian
+              ← Back to Arashi OPS
             </Link>
           </div>
         </div>

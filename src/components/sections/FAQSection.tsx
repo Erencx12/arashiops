@@ -18,7 +18,7 @@ const faqs = [
     a: "No. We build on top of your existing CRM (HubSpot, Salesforce, Pipedrive, or others). If you don't have one yet, we'll recommend and implement the right tool for your stage and budget.",
   },
   {
-    q: "What makes Meridian different from a marketing agency?",
+    q: "What makes Arashi OPS different from a marketing agency?",
     a: "Traditional agencies sell individual services in isolation: ads, SEO, campaigns. We build outbound acquisition infrastructure. A systematic pipeline that takes a target account from identification to qualified meeting, with full revenue attribution. We measure ourselves against pipeline and closed revenue, not vanity metrics.",
   },
   {

@@ -45,7 +45,7 @@ export const caseStudies: CaseStudy[] = [
       "From founder-dependent pipeline to 94 qualified meetings per month. In 90 days.",
     heroMetric: { value: "94", label: "Qualified meetings / month" },
     summary:
-      "This Series A SaaS company had product-market fit and a capable team but no repeatable way to fill the pipeline. The CEO was closing deals entirely from his personal network. Meridian built the outbound system from scratch: research, copy, tooling, automation. What had been invisible and unpredictable became a measurable growth engine.",
+      "This Series A SaaS company had product-market fit and a capable team but no repeatable way to fill the pipeline. The CEO was closing deals entirely from his personal network. Arashi OPS built the outbound system from scratch: research, copy, tooling, automation. What had been invisible and unpredictable became a measurable growth engine.",
     challenge: {
       overview:
         "After raising their Series A, the company had a strong product and a handful of enterprise design-partners. What they didn't have was an outbound motion. The founding team was spending 70% of sales time on inbound demos that rarely converted, while competitors were reaching the same buyers first. The core problem was structural: there was no system.",
@@ -142,7 +142,7 @@ export const caseStudies: CaseStudy[] = [
       "Replaced 30 hours of manual weekly sales work with automated infrastructure. Revenue 3.6× in 6 months.",
     heroMetric: { value: "3.6×", label: "Revenue in 6 months" },
     summary:
-      "This firm's senior consultants were spending 15 hours each per week on prospecting, follow-up, and CRM maintenance. The firm had no automation, no content engine, and no way to scale without hiring. Meridian rebuilt the entire sales infrastructure, stripping out the manual overhead and replacing it with systems that ran around the clock.",
+      "This firm's senior consultants were spending 15 hours each per week on prospecting, follow-up, and CRM maintenance. The firm had no automation, no content engine, and no way to scale without hiring. Arashi OPS rebuilt the entire sales infrastructure, stripping out the manual overhead and replacing it with systems that ran around the clock.",
     challenge: {
       overview:
         "The firm had built a respected consulting practice over seven years. Their client outcomes were exceptional. Their growth was entirely dependent on the personal networks of two senior partners, and those networks were finite. Every new engagement required one of them to be directly involved in selling. The team was burning out.",
@@ -240,7 +240,7 @@ export const caseStudies: CaseStudy[] = [
       "From no outbound motion to 52 qualified meetings per month and $740K pipeline in 4 months.",
     heroMetric: { value: "52", label: "Qualified meetings / month" },
     summary:
-      "This Series A payments platform had strong product-market fit within their existing network but no structured way to reach beyond it. Pipeline was unpredictable and entirely dependent on founder relationships. Meridian built a full outbound infrastructure targeting CFOs and finance leads at mid-market companies — taking them from 4 qualified meetings per month to 52 in under four months.",
+      "This Series A payments platform had strong product-market fit within their existing network but no structured way to reach beyond it. Pipeline was unpredictable and entirely dependent on founder relationships. Arashi OPS built a full outbound infrastructure targeting CFOs and finance leads at mid-market companies — taking them from 4 qualified meetings per month to 52 in under four months.",
     challenge: {
       overview:
         "The company had closed their first eight customers through founder relationships and warm introductions. That network was running dry. The sales team had no outbound process, no verified prospect lists, and no infrastructure for cold outreach. Every quarter was a guessing game.",

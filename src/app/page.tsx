@@ -13,9 +13,9 @@ import { FinalCTASection } from "@/components/sections/FinalCTASection";
 import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Meridian — Revenue Operating System",
+  title: "Arashi OPS — Revenue Operating System",
   description:
-    "Meridian builds revenue operating systems for ambitious B2B businesses. Systematic lead generation, sales infrastructure, and measurable growth.",
+    "Arashi OPS builds revenue operating systems for ambitious B2B businesses. Systematic lead generation, sales infrastructure, and measurable growth.",
 };
 
 export default function HomePage() {

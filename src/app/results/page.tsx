@@ -8,7 +8,7 @@ import { caseStudies } from "@/lib/case-studies";
 export const metadata: Metadata = {
   title: "Client Results",
   description:
-    "Documented case studies from Meridian client engagements — measurable before-and-after outcomes from real revenue system deployments.",
+    "Documented case studies from Arashi OPS client engagements — measurable before-and-after outcomes from real revenue system deployments.",
 };
 
 export default function ResultsPage() {

@@ -61,7 +61,7 @@ export default function RevenuePage() {
           <div className="grid md:grid-cols-2 gap-4">
             {[
               { label: "Revenue Dashboard",      desc: "ROAS, CAC, pipeline value, and closed revenue tracked monthly." },
-              { label: "Finance Reports",         desc: "Monthly financial summaries with attribution to Meridian's work." },
+              { label: "Finance Reports",         desc: "Monthly financial summaries with attribution to Arashi OPS's work." },
               { label: "Paid Media Management",   desc: "Full paid social and search management with weekly reporting." },
               { label: "Fractional SDR Support",  desc: "Dedicated outreach resource alongside your system." },
               { label: "Executive Reporting",     desc: "Board-ready performance decks delivered monthly." },

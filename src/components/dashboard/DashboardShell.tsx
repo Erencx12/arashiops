@@ -44,7 +44,7 @@ export function DashboardShell({ navSections, role, userName, userSub, children 
         <div className="h-[52px] border-b border-[#e5e7eb] flex items-center gap-2.5 px-4 shrink-0">
           <LogoMark size="sm" />
           <span className="text-[13px] font-semibold text-[#111111] tracking-tight">
-            Meridian
+            Arashi OPS
           </span>
           <span className="ml-auto text-[9.5px] font-semibold text-[#9ca3af] bg-[#f3f4f6] px-1.5 py-0.5 rounded uppercase tracking-wider">
             {role === "owner" ? "OS" : "Portal"}

@@ -25,7 +25,7 @@ export function LogoMark({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
         fill="none"
         aria-hidden="true"
       >
-        {/* Meridian mark: geometric peak — represents apex, noon, summit */}
+        {/* Arashi OPS mark: geometric peak — represents apex, noon, summit */}
         <path
           d="M3 12L8 4L13 12"
           stroke="white"
@@ -53,13 +53,13 @@ export function Logo({ size = "md", href = "/", className = "" }: LogoProps) {
     <Link
       href={href}
       className={`inline-flex items-center ${s.gap} group ${className}`}
-      aria-label="Meridian — Home"
+      aria-label="Arashi OPS — Home"
     >
       <LogoMark size={size} />
       <span
         className={`${s.text} font-semibold tracking-tight text-[#111111] group-hover:text-[#111111] transition-colors`}
       >
-        Meridian
+        Arashi OPS
       </span>
     </Link>
   );

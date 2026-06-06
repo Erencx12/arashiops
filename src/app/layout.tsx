@@ -19,11 +19,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Meridian — Revenue Operating System",
-    template: "%s — Meridian",
+    default: "Arashi OPS — Revenue Operating System",
+    template: "%s — Arashi OPS",
   },
   description:
-    "Meridian builds revenue operating systems for ambitious B2B businesses. Systematic lead generation, sales infrastructure, and measurable growth. Not retainer vagueness.",
+    "Arashi OPS builds revenue operating systems for ambitious B2B businesses. Systematic lead generation, sales infrastructure, and measurable growth. Not retainer vagueness.",
   keywords: [
     "revenue operations",
     "lead generation system",
@@ -33,9 +33,9 @@ export const metadata: Metadata = {
     "pipeline management",
     "outbound systems",
   ],
-  authors: [{ name: "Meridian" }],
-  creator: "Meridian",
-  publisher: "Meridian",
+  authors: [{ name: "Arashi OPS" }],
+  creator: "Arashi OPS",
+  publisher: "Arashi OPS",
   robots: {
     index: true,
     follow: true,
@@ -45,8 +45,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: baseUrl,
-    siteName: "Meridian",
-    title: "Meridian — Revenue Operating System",
+    siteName: "Arashi OPS",
+    title: "Arashi OPS — Revenue Operating System",
     description:
       "We build the operational infrastructure that transforms how ambitious businesses generate, qualify, and convert revenue at scale.",
     images: [
@@ -54,13 +54,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Meridian — Revenue Operating System",
+        alt: "Arashi OPS — Revenue Operating System",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Meridian — Revenue Operating System",
+    title: "Arashi OPS — Revenue Operating System",
     description:
       "Systematic growth infrastructure for ambitious revenue teams.",
     images: ["/og-image.png"],

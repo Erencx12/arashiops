@@ -51,7 +51,7 @@ export default async function AdminOverview() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-[20px] font-bold tracking-tight text-[#111111]">Overview</h1>
-          <p className="text-[13px] text-[#9ca3af] mt-0.5">Meridian OS · {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+          <p className="text-[13px] text-[#9ca3af] mt-0.5">Arashi OPS OS · {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
         </div>
         <Link
           href="/admin/clients"

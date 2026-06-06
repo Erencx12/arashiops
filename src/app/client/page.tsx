@@ -44,7 +44,7 @@ export default async function ClientOverview() {
             Welcome back, {client.company_name}
           </h1>
           <p className="text-[13px] text-[#9ca3af] mt-0.5">
-            Your Meridian portal · {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+            Your Arashi OPS portal · {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
           </p>
         </div>
         <Badge label={client.tier} />

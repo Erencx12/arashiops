@@ -6,7 +6,7 @@ import { Footer } from "@/components/Footer";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Get in touch with the Meridian team. We typically respond within one business day.",
+    "Get in touch with the Arashi OPS team. We typically respond within one business day.",
 };
 
 export default function ContactPage() {

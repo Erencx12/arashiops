@@ -106,7 +106,7 @@ export function DashboardMockup() {
                 <line x1="5.5" y1="9" x2="10.5" y2="9" stroke="white" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
-            <span className="text-[11px] font-semibold text-[#111111]">Meridian</span>
+            <span className="text-[11px] font-semibold text-[#111111]">Arashi OPS</span>
           </div>
 
           <p className="text-[8.5px] font-semibold text-[#9ca3af] uppercase tracking-widest px-3 mb-1.5">

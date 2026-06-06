@@ -35,11 +35,11 @@ export function Navbar() {
           <Link
             href="/"
             className="flex items-center gap-2 group"
-            aria-label="Meridian — Home"
+            aria-label="Arashi OPS — Home"
           >
             <LogoMark size="md" />
             <span className="text-[15px] font-semibold tracking-tight text-[#111111]">
-              Meridian
+              Arashi OPS
             </span>
           </Link>
 

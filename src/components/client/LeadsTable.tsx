@@ -29,7 +29,7 @@ export function LeadsTable({ leads }: { leads: DbLead[] }) {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-[20px] font-bold tracking-tight text-[#111111]">Lead Tracker</h1>
-          <p className="text-[13px] text-[#9ca3af] mt-0.5">{leads.length} leads · updated by Meridian team</p>
+          <p className="text-[13px] text-[#9ca3af] mt-0.5">{leads.length} leads · updated by Arashi OPS team</p>
         </div>
         <div className="flex items-center gap-1.5 text-[12px] text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
           <TrendingUp size={13} />

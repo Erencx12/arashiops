@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How Meridian collects, uses, and protects your information.",
+  description: "How Arashi OPS collects, uses, and protects your information.",
 };
 
 export default function PrivacyPage() {
@@ -29,7 +29,7 @@ export default function PrivacyPage() {
           <div className="prose-section space-y-10">
             <Section title="Overview">
               <p>
-                Meridian (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) is committed to protecting your
+                Arashi OPS (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) is committed to protecting your
                 personal information. This Privacy Policy explains how we collect, use, disclose,
                 and safeguard your information when you visit our website or engage with our
                 services.
@@ -158,7 +158,7 @@ export default function PrivacyPage() {
                 contact us at:
               </p>
               <address className="not-italic">
-                <p className="font-medium text-[#111111]">Meridian</p>
+                <p className="font-medium text-[#111111]">Arashi OPS</p>
                 <p>
                   Email:{" "}
                   <a href="mailto:privacy@meridian.co" className="text-[#4f46e5] hover:underline">
@@ -174,7 +174,7 @@ export default function PrivacyPage() {
               href="/"
               className="text-[13.5px] text-[#6b7280] hover:text-[#111111] transition-colors"
             >
-              ← Back to Meridian
+              ← Back to Arashi OPS
             </Link>
           </div>
         </div>
