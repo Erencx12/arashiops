@@ -19,6 +19,7 @@ import {
   getPasswordResetToken,
   usePasswordResetToken,
 } from "./queries";
+import { sendInviteEmail, sendPasswordResetEmail } from "./email";
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
@@ -156,7 +157,9 @@ export async function forgotPasswordAction(
       VALUES ('client', ${`Password reset requested for ${user.email}`})
     `;
 
-    return { success: true, resetToken: token };
+    // Send real email if configured; fallback exposes token for dev use
+    const emailResult = await sendPasswordResetEmail(user.email, token).catch(() => ({ success: false }));
+    return { success: true, resetToken: emailResult.success ? undefined : token };
   } catch {
     return { error: "Something went wrong. Please try again." };
   }
@@ -238,6 +241,7 @@ export type CreateClientState = {
   success?: boolean;
   inviteToken?: string;
   tempPassword?: string;
+  emailSent?: boolean;
   fieldErrors?: Record<string, string[]>;
 } | null;
 
@@ -293,10 +297,13 @@ export async function createClientUserAction(
     VALUES ('client', ${`New client created: ${companyName} (${email})`})
   `;
 
+  // Send real invite email if configured; fallback shows token+password in UI
+  const emailResult = await sendInviteEmail(email, contactName, token, tempPassword).catch(() => ({ success: false }));
   return {
     success: true,
-    inviteToken: token,
-    tempPassword,
+    inviteToken: emailResult.success ? undefined : token,
+    tempPassword: emailResult.success ? undefined : tempPassword,
+    emailSent: emailResult.success,
   };
 }
 

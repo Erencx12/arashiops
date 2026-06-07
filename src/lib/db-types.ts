@@ -399,3 +399,227 @@ export type DbRenewal = {
   notes: string | null;
   created_at: string;
 };
+
+// ─── Phase 7 enums ────────────────────────────────────────────────────────────
+
+export type IntegrationStatus = "Connected" | "Disconnected" | "Error" | "Pending";
+export type JobStatus = "Queued" | "Running" | "Completed" | "Failed" | "Retrying" | "Cancelled";
+export type LogLevel = "info" | "warn" | "error" | "debug";
+export type LogEventType = "system" | "user" | "integration" | "webhook" | "automation" | "security";
+export type QueueType = "incoming" | "outgoing" | "scheduled" | "retry";
+export type WebhookStatus = "Active" | "Inactive" | "Error";
+export type CredentialStatus = "active" | "disabled" | "expired";
+
+// ─── Phase 7 table types ──────────────────────────────────────────────────────
+
+export type DbIntegration = {
+  id: number;
+  name: string;
+  slug: string;
+  category: string;
+  status: IntegrationStatus;
+  enabled: boolean;
+  last_sync: string | null;
+  last_error: string | null;
+  health_score: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbIntegrationCredential = {
+  id: number;
+  integration_id: number | null;
+  integration_name: string | null;
+  service: string;
+  key_label: string;
+  key_masked: string;
+  status: CredentialStatus;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbWebhook = {
+  id: number;
+  name: string;
+  source: string;
+  endpoint: string;
+  status: WebhookStatus;
+  secret: string | null;
+  last_trigger: string | null;
+  trigger_count: number;
+  created_at: string;
+};
+
+export type DbWebhookLog = {
+  id: number;
+  webhook_id: number | null;
+  webhook_name: string | null;
+  timestamp: string;
+  source: string | null;
+  payload_size: number;
+  response_status: number | null;
+  success: boolean;
+  retry_count: number;
+  error_message: string | null;
+};
+
+export type DbJob = {
+  id: number;
+  name: string;
+  source: string | null;
+  client_id: number | null;
+  client_name: string | null;
+  status: JobStatus;
+  queue_type: QueueType;
+  created_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  duration_ms: number | null;
+  error_message: string | null;
+  retry_count: number;
+  max_retries: number;
+  payload: string | null;
+};
+
+export type DbSystemLog = {
+  id: number;
+  event_type: LogEventType;
+  level: LogLevel;
+  message: string;
+  module: string | null;
+  client_id: number | null;
+  client_name: string | null;
+  job_id: number | null;
+  webhook_id: number | null;
+  metadata: string | null;
+  created_at: string;
+};
+
+export type DbQueueItem = {
+  id: number;
+  queue_type: QueueType;
+  job_id: number | null;
+  status: "pending" | "processing" | "done" | "failed";
+  payload: string | null;
+  scheduled_at: string | null;
+  created_at: string;
+};
+
+// ─── Phase 8 enums ────────────────────────────────────────────────────────────
+
+export type EmailStatus = "Sent" | "Failed" | "Bounced";
+export type SyncStatus = "Running" | "Success" | "Failed";
+export type IntegrationCategory = "email" | "crm" | "prospecting" | "outreach" | "automation" | "ai" | "other";
+
+// ─── Phase 8 table types ──────────────────────────────────────────────────────
+
+export type DbEmailConfig = {
+  id: number;
+  provider: string;
+  integration_id: number | null;
+  smtp_host: string | null;
+  smtp_port: number;
+  smtp_secure: boolean;
+  smtp_user: string | null;
+  from_name: string;
+  from_email: string;
+  is_active: boolean;
+  last_test_at: string | null;
+  last_test_success: boolean | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbEmailLog = {
+  id: number;
+  recipient: string;
+  subject: string;
+  template: string | null;
+  status: EmailStatus;
+  provider: string | null;
+  error_message: string | null;
+  metadata: string | null;
+  sent_at: string;
+};
+
+export type DbApolloLead = {
+  id: number;
+  client_id: number | null;
+  name: string;
+  company: string | null;
+  title: string | null;
+  email: string | null;
+  linkedin_url: string | null;
+  industry: string | null;
+  company_size: string | null;
+  location: string | null;
+  source: string;
+  apollo_id: string | null;
+  import_date: string;
+  job_id: number | null;
+  created_at: string;
+};
+
+export type DbInstantlyCampaign = {
+  id: number;
+  campaign_id: string;
+  name: string;
+  status: string;
+  sent: number;
+  opened: number;
+  replied: number;
+  positive_replies: number;
+  meetings_booked: number;
+  last_sync: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbCrmContact = {
+  id: number;
+  source: string;
+  external_id: string;
+  name: string | null;
+  email: string | null;
+  company: string | null;
+  title: string | null;
+  phone: string | null;
+  client_id: number | null;
+  deal_id: number | null;
+  last_sync: string | null;
+  metadata: string | null;
+  created_at: string;
+};
+
+export type DbCrmDeal = {
+  id: number;
+  source: string;
+  external_id: string;
+  title: string | null;
+  value: number | null;
+  stage: string | null;
+  status: string | null;
+  contact_name: string | null;
+  company: string | null;
+  client_id: number | null;
+  deal_id: number | null;
+  last_sync: string | null;
+  metadata: string | null;
+  created_at: string;
+};
+
+export type DbSyncHistory = {
+  id: number;
+  integration_id: number | null;
+  integration_name: string | null;
+  operation: string;
+  status: SyncStatus;
+  records_processed: number;
+  records_created: number;
+  records_updated: number;
+  error_message: string | null;
+  duration_ms: number | null;
+  job_id: number | null;
+  started_at: string;
+  completed_at: string | null;
+};

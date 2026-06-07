@@ -62,6 +62,23 @@ const styles: Record<string, string> = {
   Renewed:                   "bg-emerald-50 text-emerald-700 border-emerald-100",
   // Contract
   Signed:                    "bg-emerald-50 text-emerald-700 border-emerald-100",
+  // Job statuses
+  Queued:                    "bg-amber-50 text-amber-700 border-amber-100",
+  Running:                   "bg-blue-50 text-blue-700 border-blue-100",
+  Failed:                    "bg-red-50 text-red-700 border-red-100",
+  Retrying:                  "bg-orange-50 text-orange-700 border-orange-100",
+  // Integration / Webhook statuses
+  Connected:                 "bg-emerald-50 text-emerald-700 border-emerald-100",
+  Disconnected:              "bg-[#f3f4f6] text-[#9ca3af] border-[#e5e7eb]",
+  Inactive:                  "bg-[#f3f4f6] text-[#9ca3af] border-[#e5e7eb]",
+  // Phase 8 — Email / Sync statuses
+  "Rate Limited":            "bg-amber-50 text-amber-700 border-amber-100",
+  "Auth Failed":             "bg-red-50 text-red-700 border-red-100",
+  Healthy:                   "bg-emerald-50 text-emerald-700 border-emerald-100",
+  Degraded:                  "bg-amber-50 text-amber-700 border-amber-100",
+  Error:                     "bg-red-50 text-red-700 border-red-100",
+  Success:                   "bg-emerald-50 text-emerald-700 border-emerald-100",
+  Bounced:                   "bg-orange-50 text-orange-700 border-orange-100",
 };
 
 export function Badge({ label }: { label: string }) {

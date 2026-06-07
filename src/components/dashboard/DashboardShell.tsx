@@ -8,6 +8,7 @@ import {
   SquareCheckBig, FileText, Video, FileCheck, Receipt, Settings,
   Package, BarChart2, FolderOpen, Target, DollarSign, ListTodo, ClipboardList,
   Handshake, Phone,
+  Plug, Cpu, ScrollText, Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
@@ -69,6 +70,15 @@ const OWNER_NAV: NavSection[] = [
     items: [
       { label: "Contracts", href: "/admin/contracts", icon: FileCheck },
       { label: "Invoices",  href: "/admin/invoices",  icon: Receipt },
+    ],
+  },
+  {
+    label: "Infrastructure",
+    items: [
+      { label: "Integrations", href: "/admin/integrations", icon: Plug },
+      { label: "Jobs",         href: "/admin/jobs",         icon: Cpu },
+      { label: "Logs",         href: "/admin/logs",         icon: ScrollText },
+      { label: "Webhooks",     href: "/admin/webhooks",     icon: Zap },
     ],
   },
   {

@@ -6,6 +6,10 @@ import type {
   DbOnboardingForm, DbOnboardingProgress, DbProjectMilestone,
   DbTask, DbFile, DbNotification, DbClientNote,
   DbDeal, DbDiscoveryCall, DbProposal, DbPayment, DbRenewal,
+  DbIntegration, DbIntegrationCredential, DbWebhook, DbWebhookLog,
+  DbJob, DbSystemLog, DbQueueItem,
+  DbEmailConfig, DbEmailLog, DbApolloLead, DbInstantlyCampaign,
+  DbCrmContact, DbCrmDeal, DbSyncHistory,
 } from "./db-types";
 
 // Helper: Neon returns Record<string, any>[] — cast through unknown
@@ -1093,4 +1097,696 @@ export async function getFinancialMetrics() {
     mrr:            Number(o.mrr ?? 0),
     totalPayments:  Number(p.total_paid ?? 0),
   };
+}
+
+// ─── Phase 7: Integrations ────────────────────────────────────────────────────
+
+export function getIntegrations(): Promise<DbIntegration[]> {
+  return cast<DbIntegration>(sql`
+    SELECT id, name, slug, COALESCE(category, 'other') AS category,
+           status, enabled, health_score,
+           last_sync::text AS last_sync, last_error,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM integrations ORDER BY name ASC
+  `);
+}
+
+export async function toggleIntegration(id: number, enabled: boolean): Promise<void> {
+  const status = enabled ? "Connected" : "Disconnected";
+  await sql`UPDATE integrations SET enabled = ${enabled}, status = ${status}, updated_at = NOW() WHERE id = ${id}`;
+}
+
+export async function updateIntegrationHealth(id: number, data: {
+  status: string; lastSync?: string; lastError?: string | null; healthScore?: number;
+}): Promise<void> {
+  await sql`
+    UPDATE integrations SET
+      status       = ${data.status},
+      last_sync    = ${data.lastSync ?? null},
+      last_error   = ${data.lastError ?? null},
+      health_score = ${data.healthScore ?? 0},
+      updated_at   = NOW()
+    WHERE id = ${id}
+  `;
+}
+
+// ─── Phase 7: Integration Credentials ────────────────────────────────────────
+
+export function getCredentials(integrationId?: number): Promise<DbIntegrationCredential[]> {
+  if (integrationId) {
+    return cast<DbIntegrationCredential>(sql`
+      SELECT ic.id, ic.integration_id, i.name AS integration_name,
+             ic.service, ic.key_label, ic.key_masked, ic.status,
+             ic.created_at::text AS created_at, ic.updated_at::text AS updated_at
+      FROM integration_credentials ic
+      LEFT JOIN integrations i ON i.id = ic.integration_id
+      WHERE ic.integration_id = ${integrationId}
+      ORDER BY ic.created_at DESC
+    `);
+  }
+  return cast<DbIntegrationCredential>(sql`
+    SELECT ic.id, ic.integration_id, i.name AS integration_name,
+           ic.service, ic.key_label, ic.key_masked, ic.status,
+           ic.created_at::text AS created_at, ic.updated_at::text AS updated_at
+    FROM integration_credentials ic
+    LEFT JOIN integrations i ON i.id = ic.integration_id
+    ORDER BY ic.created_at DESC
+  `);
+}
+
+export async function addCredential(data: {
+  integrationId?: number | null; service: string; keyLabel: string; keyMasked: string;
+}): Promise<void> {
+  await sql`
+    INSERT INTO integration_credentials (integration_id, service, key_label, key_masked)
+    VALUES (${data.integrationId ?? null}, ${data.service}, ${data.keyLabel}, ${data.keyMasked})
+  `;
+}
+
+export async function deleteCredential(id: number): Promise<void> {
+  await sql`DELETE FROM integration_credentials WHERE id = ${id}`;
+}
+
+export async function updateCredentialStatus(id: number, status: string): Promise<void> {
+  await sql`UPDATE integration_credentials SET status = ${status}, updated_at = NOW() WHERE id = ${id}`;
+}
+
+// ─── Phase 7: Webhooks ────────────────────────────────────────────────────────
+
+export function getWebhooks(): Promise<DbWebhook[]> {
+  return cast<DbWebhook>(sql`
+    SELECT id, name, source, endpoint, status, secret,
+           last_trigger::text AS last_trigger, trigger_count,
+           created_at::text AS created_at
+    FROM webhooks ORDER BY created_at DESC
+  `);
+}
+
+export async function createWebhook(data: {
+  name: string; source: string; endpoint: string; secret?: string | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO webhooks (name, source, endpoint, secret)
+    VALUES (${data.name}, ${data.source}, ${data.endpoint}, ${data.secret ?? null})
+    RETURNING id
+  `;
+  return (rows as unknown as { id: number }[])[0];
+}
+
+export async function updateWebhookStatus(id: number, status: string): Promise<void> {
+  await sql`UPDATE webhooks SET status = ${status} WHERE id = ${id}`;
+}
+
+export async function deleteWebhook(id: number): Promise<void> {
+  await sql`DELETE FROM webhooks WHERE id = ${id}`;
+}
+
+export async function recordWebhookTrigger(id: number, success: boolean, payloadSize: number, responseStatus?: number | null, errorMessage?: string | null): Promise<void> {
+  await sql`UPDATE webhooks SET trigger_count = trigger_count + 1, last_trigger = NOW() WHERE id = ${id}`;
+  await sql`
+    INSERT INTO webhook_logs (webhook_id, payload_size, response_status, success, error_message)
+    VALUES (${id}, ${payloadSize}, ${responseStatus ?? null}, ${success}, ${errorMessage ?? null})
+  `;
+}
+
+export function getWebhookLogs(webhookId?: number): Promise<DbWebhookLog[]> {
+  if (webhookId) {
+    return cast<DbWebhookLog>(sql`
+      SELECT wl.id, wl.webhook_id, w.name AS webhook_name,
+             wl.timestamp::text AS timestamp, wl.source,
+             wl.payload_size, wl.response_status, wl.success,
+             wl.retry_count, wl.error_message
+      FROM webhook_logs wl
+      LEFT JOIN webhooks w ON w.id = wl.webhook_id
+      WHERE wl.webhook_id = ${webhookId}
+      ORDER BY wl.timestamp DESC LIMIT 100
+    `);
+  }
+  return cast<DbWebhookLog>(sql`
+    SELECT wl.id, wl.webhook_id, w.name AS webhook_name,
+           wl.timestamp::text AS timestamp, wl.source,
+           wl.payload_size, wl.response_status, wl.success,
+           wl.retry_count, wl.error_message
+    FROM webhook_logs wl
+    LEFT JOIN webhooks w ON w.id = wl.webhook_id
+    ORDER BY wl.timestamp DESC LIMIT 200
+  `);
+}
+
+// ─── Phase 7: Jobs ────────────────────────────────────────────────────────────
+
+export function getJobs(filter?: { status?: string; queueType?: string }): Promise<DbJob[]> {
+  if (filter?.status && filter.status !== "All") {
+    return cast<DbJob>(sql`
+      SELECT j.id, j.name, j.source, j.client_id, c.company_name AS client_name,
+             j.status, j.queue_type,
+             j.created_at::text AS created_at,
+             j.started_at::text AS started_at,
+             j.completed_at::text AS completed_at,
+             j.duration_ms, j.error_message, j.retry_count, j.max_retries, j.payload
+      FROM jobs j LEFT JOIN clients c ON c.id = j.client_id
+      WHERE j.status = ${filter.status}
+      ORDER BY j.created_at DESC LIMIT 200
+    `);
+  }
+  return cast<DbJob>(sql`
+    SELECT j.id, j.name, j.source, j.client_id, c.company_name AS client_name,
+           j.status, j.queue_type,
+           j.created_at::text AS created_at,
+           j.started_at::text AS started_at,
+           j.completed_at::text AS completed_at,
+           j.duration_ms, j.error_message, j.retry_count, j.max_retries, j.payload
+    FROM jobs j LEFT JOIN clients c ON c.id = j.client_id
+    ORDER BY j.created_at DESC LIMIT 200
+  `);
+}
+
+export async function createJob(data: {
+  name: string; source?: string; clientId?: number | null; queueType?: string; payload?: string;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO jobs (name, source, client_id, queue_type, payload)
+    VALUES (${data.name}, ${data.source ?? null}, ${data.clientId ?? null},
+            ${data.queueType ?? "incoming"}, ${data.payload ?? null})
+    RETURNING id
+  `;
+  return (rows as unknown as { id: number }[])[0];
+}
+
+export async function updateJobStatus(id: number, status: string, errorMessage?: string | null): Promise<void> {
+  if (status === "Running") {
+    await sql`UPDATE jobs SET status = ${status}, started_at = NOW() WHERE id = ${id}`;
+  } else if (status === "Completed") {
+    await sql`
+      UPDATE jobs SET status = ${status}, completed_at = NOW(),
+        duration_ms = EXTRACT(EPOCH FROM (NOW() - COALESCE(started_at, created_at))) * 1000
+      WHERE id = ${id}
+    `;
+  } else if (status === "Failed" || status === "Retrying") {
+    await sql`
+      UPDATE jobs SET status = ${status}, error_message = ${errorMessage ?? null},
+        retry_count = retry_count + 1
+      WHERE id = ${id}
+    `;
+  } else {
+    await sql`UPDATE jobs SET status = ${status} WHERE id = ${id}`;
+  }
+}
+
+export async function getJobStats(): Promise<{
+  queued: number; running: number; failed: number; completed: number; total: number;
+  incoming: number; outgoing: number; scheduled: number; retry: number;
+}> {
+  const [byStatus, byQueue] = await Promise.all([
+    sql`SELECT status, COUNT(*) AS cnt FROM jobs GROUP BY status` as Promise<any[]>,
+    sql`SELECT queue_type, COUNT(*) AS cnt FROM jobs GROUP BY queue_type` as Promise<any[]>,
+  ]);
+  const s = Object.fromEntries((byStatus as any[]).map(r => [r.status, Number(r.cnt)]));
+  const q = Object.fromEntries((byQueue as any[]).map(r => [r.queue_type, Number(r.cnt)]));
+  return {
+    queued:    s["Queued"]    ?? 0,
+    running:   s["Running"]   ?? 0,
+    failed:    s["Failed"]    ?? 0,
+    completed: s["Completed"] ?? 0,
+    total:     Object.values(s).reduce((a: number, b) => a + (b as number), 0),
+    incoming:  q["incoming"]  ?? 0,
+    outgoing:  q["outgoing"]  ?? 0,
+    scheduled: q["scheduled"] ?? 0,
+    retry:     q["retry"]     ?? 0,
+  };
+}
+
+// ─── Phase 7: System Logs ─────────────────────────────────────────────────────
+
+export function getSystemLogs(filter?: { level?: string; eventType?: string }): Promise<DbSystemLog[]> {
+  if (filter?.level && filter.level !== "all") {
+    return cast<DbSystemLog>(sql`
+      SELECT sl.id, sl.event_type, sl.level, sl.message, sl.module,
+             sl.client_id, c.company_name AS client_name,
+             sl.job_id, sl.webhook_id, sl.metadata,
+             sl.created_at::text AS created_at
+      FROM system_logs sl LEFT JOIN clients c ON c.id = sl.client_id
+      WHERE sl.level = ${filter.level}
+      ORDER BY sl.created_at DESC LIMIT 500
+    `);
+  }
+  if (filter?.eventType && filter.eventType !== "all") {
+    return cast<DbSystemLog>(sql`
+      SELECT sl.id, sl.event_type, sl.level, sl.message, sl.module,
+             sl.client_id, c.company_name AS client_name,
+             sl.job_id, sl.webhook_id, sl.metadata,
+             sl.created_at::text AS created_at
+      FROM system_logs sl LEFT JOIN clients c ON c.id = sl.client_id
+      WHERE sl.event_type = ${filter.eventType}
+      ORDER BY sl.created_at DESC LIMIT 500
+    `);
+  }
+  return cast<DbSystemLog>(sql`
+    SELECT sl.id, sl.event_type, sl.level, sl.message, sl.module,
+           sl.client_id, c.company_name AS client_name,
+           sl.job_id, sl.webhook_id, sl.metadata,
+           sl.created_at::text AS created_at
+    FROM system_logs sl LEFT JOIN clients c ON c.id = sl.client_id
+    ORDER BY sl.created_at DESC LIMIT 500
+  `);
+}
+
+export async function addSystemLog(data: {
+  eventType: string; level: string; message: string;
+  module?: string; clientId?: number | null; jobId?: number | null;
+  webhookId?: number | null; metadata?: string | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO system_logs (event_type, level, message, module, client_id, job_id, webhook_id, metadata)
+    VALUES (${data.eventType}, ${data.level}, ${data.message},
+            ${data.module ?? null}, ${data.clientId ?? null},
+            ${data.jobId ?? null}, ${data.webhookId ?? null},
+            ${data.metadata ?? null})
+  `;
+}
+
+export async function getLogStats(): Promise<{
+  total: number; errors: number; warnings: number; today: number;
+}> {
+  const rows = await sql`
+    SELECT
+      COUNT(*) AS total,
+      SUM(CASE WHEN level = 'error' THEN 1 ELSE 0 END) AS errors,
+      SUM(CASE WHEN level = 'warn'  THEN 1 ELSE 0 END) AS warnings,
+      SUM(CASE WHEN created_at >= CURRENT_DATE THEN 1 ELSE 0 END) AS today
+    FROM system_logs
+  ` as unknown as any[];
+  const r = rows[0];
+  return {
+    total:    Number(r.total    ?? 0),
+    errors:   Number(r.errors   ?? 0),
+    warnings: Number(r.warnings ?? 0),
+    today:    Number(r.today    ?? 0),
+  };
+}
+
+// ─── Phase 7: Infrastructure health ──────────────────────────────────────────
+
+export async function getInfrastructureHealth(): Promise<{
+  connectedIntegrations: number;
+  totalIntegrations: number;
+  activeWebhooks: number;
+  queuedJobs: number;
+  failedJobs: number;
+  recentErrors: number;
+}> {
+  const [integ, webhooks, jobStats, logStats] = await Promise.all([
+    sql`SELECT COUNT(*) AS total, SUM(CASE WHEN enabled THEN 1 ELSE 0 END) AS connected FROM integrations` as Promise<any[]>,
+    sql`SELECT COUNT(*) AS active FROM webhooks WHERE status = 'Active'` as Promise<any[]>,
+    sql`SELECT
+          SUM(CASE WHEN status = 'Queued'  THEN 1 ELSE 0 END) AS queued,
+          SUM(CASE WHEN status = 'Failed'  THEN 1 ELSE 0 END) AS failed
+        FROM jobs` as Promise<any[]>,
+    sql`SELECT COUNT(*) AS errors FROM system_logs WHERE level = 'error' AND created_at >= NOW() - INTERVAL '24 hours'` as Promise<any[]>,
+  ]);
+  return {
+    connectedIntegrations: Number((integ as any[])[0].connected ?? 0),
+    totalIntegrations:     Number((integ as any[])[0].total    ?? 0),
+    activeWebhooks:        Number((webhooks as any[])[0].active  ?? 0),
+    queuedJobs:            Number((jobStats as any[])[0].queued  ?? 0),
+    failedJobs:            Number((jobStats as any[])[0].failed  ?? 0),
+    recentErrors:          Number((logStats as any[])[0].errors  ?? 0),
+  };
+}
+
+// ─── Phase 7: Credential value (server-side only — never expose to client) ────
+
+export async function getCredentialValue(integrationId: number, service?: string): Promise<string | null> {
+  const rows = service
+    ? await sql`
+        SELECT key_value FROM integration_credentials
+        WHERE integration_id = ${integrationId} AND service = ${service} AND status = 'active'
+        ORDER BY created_at DESC LIMIT 1
+      ` as unknown as { key_value: string | null }[]
+    : await sql`
+        SELECT key_value FROM integration_credentials
+        WHERE integration_id = ${integrationId} AND status = 'active'
+        ORDER BY created_at DESC LIMIT 1
+      ` as unknown as { key_value: string | null }[];
+  return rows[0]?.key_value ?? null;
+}
+
+export async function getCredentialValueByService(service: string): Promise<string | null> {
+  const rows = await sql`
+    SELECT key_value FROM integration_credentials
+    WHERE service = ${service} AND status = 'active'
+    ORDER BY created_at DESC LIMIT 1
+  ` as unknown as { key_value: string | null }[];
+  return rows[0]?.key_value ?? null;
+}
+
+// ─── Phase 8: Email Config ─────────────────────────────────────────────────────
+
+export async function getEmailConfig(): Promise<DbEmailConfig | null> {
+  const rows = await cast<DbEmailConfig>(sql`
+    SELECT id, provider, integration_id, smtp_host, smtp_port, smtp_secure,
+           smtp_user, from_name, from_email, is_active,
+           last_test_at::text AS last_test_at, last_test_success,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM email_config WHERE is_active = TRUE ORDER BY updated_at DESC LIMIT 1
+  `);
+  return rows[0] ?? null;
+}
+
+export async function getAllEmailConfigs(): Promise<DbEmailConfig[]> {
+  return cast<DbEmailConfig>(sql`
+    SELECT id, provider, integration_id, smtp_host, smtp_port, smtp_secure,
+           smtp_user, from_name, from_email, is_active,
+           last_test_at::text AS last_test_at, last_test_success,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM email_config ORDER BY updated_at DESC
+  `);
+}
+
+export async function upsertEmailConfig(data: {
+  provider: string; integrationId?: number | null;
+  smtpHost?: string | null; smtpPort?: number; smtpSecure?: boolean; smtpUser?: string | null;
+  fromName: string; fromEmail: string;
+}): Promise<{ id: number }> {
+  await sql`UPDATE email_config SET is_active = FALSE`;
+  const rows = await sql`
+    INSERT INTO email_config
+      (provider, integration_id, smtp_host, smtp_port, smtp_secure, smtp_user, from_name, from_email, is_active, updated_at)
+    VALUES
+      (${data.provider}, ${data.integrationId ?? null}, ${data.smtpHost ?? null},
+       ${data.smtpPort ?? 587}, ${data.smtpSecure ?? false}, ${data.smtpUser ?? null},
+       ${data.fromName}, ${data.fromEmail}, TRUE, NOW())
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+export async function updateEmailConfigTest(id: number, success: boolean): Promise<void> {
+  await sql`
+    UPDATE email_config SET last_test_at = NOW(), last_test_success = ${success}, updated_at = NOW()
+    WHERE id = ${id}
+  `;
+}
+
+export async function createEmailLog(data: {
+  recipient: string; subject: string; template?: string | null;
+  status: string; provider?: string | null; errorMessage?: string | null; metadata?: string | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO email_logs (recipient, subject, template, status, provider, error_message, metadata)
+    VALUES (${data.recipient}, ${data.subject}, ${data.template ?? null},
+            ${data.status}, ${data.provider ?? null}, ${data.errorMessage ?? null}, ${data.metadata ?? null})
+  `;
+}
+
+export function getEmailLogs(limit = 50): Promise<DbEmailLog[]> {
+  return cast<DbEmailLog>(sql`
+    SELECT id, recipient, subject, template, status, provider, error_message, metadata,
+           sent_at::text AS sent_at
+    FROM email_logs ORDER BY sent_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function getEmailStats(): Promise<{ total: number; sent: number; failed: number; todaySent: number }> {
+  const rows = await sql`
+    SELECT
+      COUNT(*) AS total,
+      SUM(CASE WHEN status = 'Sent'   THEN 1 ELSE 0 END) AS sent,
+      SUM(CASE WHEN status = 'Failed' THEN 1 ELSE 0 END) AS failed,
+      SUM(CASE WHEN status = 'Sent' AND sent_at >= CURRENT_DATE THEN 1 ELSE 0 END) AS today_sent
+    FROM email_logs
+  ` as unknown as any[];
+  const r = rows[0];
+  return { total: Number(r.total ?? 0), sent: Number(r.sent ?? 0), failed: Number(r.failed ?? 0), todaySent: Number(r.today_sent ?? 0) };
+}
+
+// ─── Phase 8: Apollo Leads ─────────────────────────────────────────────────────
+
+export function getApolloLeads(clientId?: number, limit = 200): Promise<DbApolloLead[]> {
+  if (clientId) {
+    return cast<DbApolloLead>(sql`
+      SELECT id, client_id, name, company, title, email, linkedin_url, industry,
+             company_size, location, source, apollo_id,
+             import_date::text AS import_date, job_id,
+             created_at::text AS created_at
+      FROM apollo_leads WHERE client_id = ${clientId}
+      ORDER BY created_at DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbApolloLead>(sql`
+    SELECT id, client_id, name, company, title, email, linkedin_url, industry,
+           company_size, location, source, apollo_id,
+           import_date::text AS import_date, job_id,
+           created_at::text AS created_at
+    FROM apollo_leads ORDER BY created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function getApolloLeadCount(clientId?: number): Promise<number> {
+  const rows = clientId
+    ? await sql`SELECT COUNT(*) AS cnt FROM apollo_leads WHERE client_id = ${clientId}` as unknown as any[]
+    : await sql`SELECT COUNT(*) AS cnt FROM apollo_leads` as unknown as any[];
+  return Number(rows[0].cnt ?? 0);
+}
+
+export async function createApolloLeadsBatch(leads: {
+  name: string; company?: string | null; title?: string | null; email?: string | null;
+  linkedinUrl?: string | null; industry?: string | null; companySize?: string | null;
+  location?: string | null; apolloId?: string | null; clientId?: number | null; jobId?: number | null;
+}[]): Promise<number> {
+  let created = 0;
+  for (const lead of leads) {
+    try {
+      await sql`
+        INSERT INTO apollo_leads
+          (name, company, title, email, linkedin_url, industry, company_size, location, apollo_id, client_id, job_id)
+        VALUES
+          (${lead.name}, ${lead.company ?? null}, ${lead.title ?? null}, ${lead.email ?? null},
+           ${lead.linkedinUrl ?? null}, ${lead.industry ?? null}, ${lead.companySize ?? null},
+           ${lead.location ?? null}, ${lead.apolloId ?? null}, ${lead.clientId ?? null}, ${lead.jobId ?? null})
+        ON CONFLICT (apollo_id) DO NOTHING
+      `;
+      created++;
+    } catch { /* skip dupes */ }
+  }
+  return created;
+}
+
+// ─── Phase 8: Instantly Campaigns ─────────────────────────────────────────────
+
+export function getInstantlyCampaigns(): Promise<DbInstantlyCampaign[]> {
+  return cast<DbInstantlyCampaign>(sql`
+    SELECT id, campaign_id, name, status, sent, opened, replied, positive_replies, meetings_booked,
+           last_sync::text AS last_sync,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM instantly_campaigns ORDER BY updated_at DESC
+  `);
+}
+
+export async function upsertInstantlyCampaign(data: {
+  campaignId: string; name: string; status: string;
+  sent: number; opened: number; replied: number; positiveReplies: number; meetingsBooked: number;
+}): Promise<void> {
+  await sql`
+    INSERT INTO instantly_campaigns
+      (campaign_id, name, status, sent, opened, replied, positive_replies, meetings_booked, last_sync)
+    VALUES
+      (${data.campaignId}, ${data.name}, ${data.status}, ${data.sent}, ${data.opened},
+       ${data.replied}, ${data.positiveReplies}, ${data.meetingsBooked}, NOW())
+    ON CONFLICT (campaign_id) DO UPDATE SET
+      name = EXCLUDED.name, status = EXCLUDED.status, sent = EXCLUDED.sent,
+      opened = EXCLUDED.opened, replied = EXCLUDED.replied,
+      positive_replies = EXCLUDED.positive_replies, meetings_booked = EXCLUDED.meetings_booked,
+      last_sync = NOW(), updated_at = NOW()
+  `;
+}
+
+export async function getInstantlyStats(): Promise<{ campaigns: number; totalSent: number; totalReplied: number; totalMeetings: number }> {
+  const rows = await sql`
+    SELECT COUNT(*) AS campaigns, SUM(sent) AS total_sent,
+           SUM(replied) AS total_replied, SUM(meetings_booked) AS total_meetings
+    FROM instantly_campaigns
+  ` as unknown as any[];
+  const r = rows[0];
+  return {
+    campaigns:     Number(r.campaigns     ?? 0),
+    totalSent:     Number(r.total_sent    ?? 0),
+    totalReplied:  Number(r.total_replied ?? 0),
+    totalMeetings: Number(r.total_meetings ?? 0),
+  };
+}
+
+// ─── Phase 8: CRM Contacts ─────────────────────────────────────────────────────
+
+export function getCrmContacts(source?: string, limit = 200): Promise<DbCrmContact[]> {
+  if (source) {
+    return cast<DbCrmContact>(sql`
+      SELECT id, source, external_id, name, email, company, title, phone,
+             client_id, deal_id, last_sync::text AS last_sync, metadata,
+             created_at::text AS created_at
+      FROM crm_contacts WHERE source = ${source}
+      ORDER BY created_at DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbCrmContact>(sql`
+    SELECT id, source, external_id, name, email, company, title, phone,
+           client_id, deal_id, last_sync::text AS last_sync, metadata,
+           created_at::text AS created_at
+    FROM crm_contacts ORDER BY created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function upsertCrmContact(data: {
+  source: string; externalId: string; name?: string | null; email?: string | null;
+  company?: string | null; title?: string | null; phone?: string | null;
+  clientId?: number | null; dealId?: number | null; metadata?: string | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO crm_contacts
+      (source, external_id, name, email, company, title, phone, client_id, deal_id, last_sync, metadata)
+    VALUES
+      (${data.source}, ${data.externalId}, ${data.name ?? null}, ${data.email ?? null},
+       ${data.company ?? null}, ${data.title ?? null}, ${data.phone ?? null},
+       ${data.clientId ?? null}, ${data.dealId ?? null}, NOW(), ${data.metadata ?? null})
+    ON CONFLICT (source, external_id) DO UPDATE SET
+      name = EXCLUDED.name, email = EXCLUDED.email, company = EXCLUDED.company,
+      title = EXCLUDED.title, phone = EXCLUDED.phone, last_sync = NOW(),
+      metadata = EXCLUDED.metadata
+  `;
+}
+
+export function getCrmDeals(source?: string, limit = 200): Promise<DbCrmDeal[]> {
+  if (source) {
+    return cast<DbCrmDeal>(sql`
+      SELECT id, source, external_id, title, value::float AS value, stage, status,
+             contact_name, company, client_id, deal_id, last_sync::text AS last_sync, metadata,
+             created_at::text AS created_at
+      FROM crm_deals WHERE source = ${source}
+      ORDER BY created_at DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbCrmDeal>(sql`
+    SELECT id, source, external_id, title, value::float AS value, stage, status,
+           contact_name, company, client_id, deal_id, last_sync::text AS last_sync, metadata,
+           created_at::text AS created_at
+    FROM crm_deals ORDER BY created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function upsertCrmDeal(data: {
+  source: string; externalId: string; title?: string | null; value?: number | null;
+  stage?: string | null; status?: string | null; contactName?: string | null;
+  company?: string | null; clientId?: number | null; dealId?: number | null; metadata?: string | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO crm_deals
+      (source, external_id, title, value, stage, status, contact_name, company,
+       client_id, deal_id, last_sync, metadata)
+    VALUES
+      (${data.source}, ${data.externalId}, ${data.title ?? null}, ${data.value ?? null},
+       ${data.stage ?? null}, ${data.status ?? null}, ${data.contactName ?? null},
+       ${data.company ?? null}, ${data.clientId ?? null}, ${data.dealId ?? null},
+       NOW(), ${data.metadata ?? null})
+    ON CONFLICT (source, external_id) DO UPDATE SET
+      title = EXCLUDED.title, value = EXCLUDED.value, stage = EXCLUDED.stage,
+      status = EXCLUDED.status, last_sync = NOW(), metadata = EXCLUDED.metadata
+  `;
+}
+
+export async function getCrmStats(): Promise<{
+  hubspotContacts: number; hubspotDeals: number;
+  pipedriveContacts: number; pipedriveDeals: number;
+  totalContacts: number; totalDeals: number;
+}> {
+  const [contacts, deals] = await Promise.all([
+    sql`SELECT source, COUNT(*) AS cnt FROM crm_contacts GROUP BY source` as Promise<any[]>,
+    sql`SELECT source, COUNT(*) AS cnt FROM crm_deals GROUP BY source` as Promise<any[]>,
+  ]);
+  const c = Object.fromEntries((contacts as any[]).map(r => [r.source, Number(r.cnt)]));
+  const d = Object.fromEntries((deals as any[]).map(r => [r.source, Number(r.cnt)]));
+  return {
+    hubspotContacts:   c["hubspot"]   ?? 0,
+    hubspotDeals:      d["hubspot"]   ?? 0,
+    pipedriveContacts: c["pipedrive"] ?? 0,
+    pipedriveDeals:    d["pipedrive"] ?? 0,
+    totalContacts: Object.values(c).reduce((a: number, b) => a + (b as number), 0),
+    totalDeals:    Object.values(d).reduce((a: number, b) => a + (b as number), 0),
+  };
+}
+
+// ─── Phase 8: Sync History ─────────────────────────────────────────────────────
+
+export async function createSyncHistory(data: {
+  integrationId?: number | null; operation: string; jobId?: number | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO sync_history (integration_id, operation, job_id)
+    VALUES (${data.integrationId ?? null}, ${data.operation}, ${data.jobId ?? null})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+export async function completeSyncHistory(id: number, data: {
+  status: string; recordsProcessed: number; recordsCreated: number; recordsUpdated: number;
+  errorMessage?: string | null; durationMs?: number | null;
+}): Promise<void> {
+  await sql`
+    UPDATE sync_history SET
+      status = ${data.status}, records_processed = ${data.recordsProcessed},
+      records_created = ${data.recordsCreated}, records_updated = ${data.recordsUpdated},
+      error_message = ${data.errorMessage ?? null}, duration_ms = ${data.durationMs ?? null},
+      completed_at = NOW()
+    WHERE id = ${id}
+  `;
+}
+
+export function getSyncHistory(integrationId?: number, limit = 100): Promise<DbSyncHistory[]> {
+  if (integrationId) {
+    return cast<DbSyncHistory>(sql`
+      SELECT sh.id, sh.integration_id, i.name AS integration_name,
+             sh.operation, sh.status, sh.records_processed, sh.records_created,
+             sh.records_updated, sh.error_message, sh.duration_ms, sh.job_id,
+             sh.started_at::text AS started_at, sh.completed_at::text AS completed_at
+      FROM sync_history sh
+      LEFT JOIN integrations i ON i.id = sh.integration_id
+      WHERE sh.integration_id = ${integrationId}
+      ORDER BY sh.started_at DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbSyncHistory>(sql`
+    SELECT sh.id, sh.integration_id, i.name AS integration_name,
+           sh.operation, sh.status, sh.records_processed, sh.records_created,
+           sh.records_updated, sh.error_message, sh.duration_ms, sh.job_id,
+           sh.started_at::text AS started_at, sh.completed_at::text AS completed_at
+    FROM sync_history sh
+    LEFT JOIN integrations i ON i.id = sh.integration_id
+    ORDER BY sh.started_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function getSyncStats(): Promise<{ total: number; success: number; failed: number; today: number }> {
+  const rows = await sql`
+    SELECT
+      COUNT(*) AS total,
+      SUM(CASE WHEN status = 'Success' THEN 1 ELSE 0 END) AS success,
+      SUM(CASE WHEN status = 'Failed'  THEN 1 ELSE 0 END) AS failed,
+      SUM(CASE WHEN started_at >= CURRENT_DATE THEN 1 ELSE 0 END) AS today
+    FROM sync_history
+  ` as unknown as any[];
+  const r = rows[0];
+  return { total: Number(r.total ?? 0), success: Number(r.success ?? 0), failed: Number(r.failed ?? 0), today: Number(r.today ?? 0) };
+}
+
+// ─── Phase 8: Integration by slug ─────────────────────────────────────────────
+
+export async function getIntegrationBySlug(slug: string): Promise<DbIntegration | null> {
+  const rows = await cast<DbIntegration>(sql`
+    SELECT id, name, slug, COALESCE(category, 'other') AS category,
+           status, enabled, health_score,
+           last_sync::text AS last_sync, last_error,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM integrations WHERE slug = ${slug} LIMIT 1
+  `);
+  return rows[0] ?? null;
 }

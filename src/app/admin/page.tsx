@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CheckSquare, Users, FolderKanban, Video, Activity } from "lucide-react";
+import { ArrowRight, CheckSquare, Users, FolderKanban, Video, Activity, Plug, CheckCircle2, XCircle, AlertCircle, Mail, Search, BarChart2 } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Badge } from "@/components/dashboard/Badge";
 import {
@@ -9,6 +9,12 @@ import {
   getApprovals,
   getInvoices,
   getRecentActivity,
+  getInfrastructureHealth,
+  getEmailStats,
+  getApolloLeadCount,
+  getInstantlyStats,
+  getCrmStats,
+  getSyncStats,
 } from "@/lib/queries";
 
 export const metadata = { title: "Overview" };
@@ -32,13 +38,19 @@ function timeAgo(isoStr: string): string {
 }
 
 export default async function AdminOverview() {
-  const [stats, clients, projects, approvals, invoices, activity] = await Promise.all([
+  const [stats, clients, projects, approvals, invoices, activity, infraHealth, emailStats, apolloLeadCount, instantlyStats, crmStats, syncStats] = await Promise.all([
     getDashboardStats(),
     getClients(),
     getProjects(),
     getApprovals(),
     getInvoices(),
     getRecentActivity(6),
+    getInfrastructureHealth(),
+    getEmailStats(),
+    getApolloLeadCount(),
+    getInstantlyStats(),
+    getCrmStats(),
+    getSyncStats(),
   ]);
 
   const overdue = invoices.filter((i) => i.status === "Overdue");
@@ -197,6 +209,76 @@ export default async function AdminOverview() {
               </div>
             </div>
           )}
+
+          {/* Integration Health */}
+          <div className="border border-[#e5e7eb] rounded-xl overflow-hidden bg-white">
+            <div className="px-5 py-4 border-b border-[#e5e7eb] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Plug size={13} className="text-[#9ca3af]" />
+                <p className="text-[13px] font-semibold text-[#111111]">Integration Health</p>
+              </div>
+              <Link href="/admin/integrations" className="text-[12px] text-[#6b7280] hover:text-[#111111] transition-colors">
+                Manage
+              </Link>
+            </div>
+            <div className="divide-y divide-[#f3f4f6]">
+              <div className="px-5 py-3 flex items-center justify-between">
+                <span className="text-[12.5px] text-[#6b7280]">Connected</span>
+                <div className="flex items-center gap-1.5">
+                  {infraHealth.connectedIntegrations > 0
+                    ? <CheckCircle2 size={12} className="text-emerald-500" />
+                    : <XCircle size={12} className="text-[#d1d5db]" />}
+                  <span className="text-[12.5px] font-medium text-[#374151]">{infraHealth.connectedIntegrations}/{infraHealth.totalIntegrations}</span>
+                </div>
+              </div>
+              <div className="px-5 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Mail size={11} className="text-[#9ca3af]" />
+                  <span className="text-[12.5px] text-[#6b7280]">Email</span>
+                </div>
+                <span className="text-[12.5px] font-medium text-[#374151]">{emailStats.sent} sent · {emailStats.failed} failed</span>
+              </div>
+              <div className="px-5 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Search size={11} className="text-[#9ca3af]" />
+                  <span className="text-[12.5px] text-[#6b7280]">Apollo Leads</span>
+                </div>
+                <span className="text-[12.5px] font-medium text-[#374151]">{apolloLeadCount.toLocaleString()}</span>
+              </div>
+              <div className="px-5 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Activity size={11} className="text-[#9ca3af]" />
+                  <span className="text-[12.5px] text-[#6b7280]">Campaigns</span>
+                </div>
+                <span className="text-[12.5px] font-medium text-[#374151]">{instantlyStats.campaigns} · {instantlyStats.totalSent.toLocaleString()} sent</span>
+              </div>
+              <div className="px-5 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <BarChart2 size={11} className="text-[#9ca3af]" />
+                  <span className="text-[12.5px] text-[#6b7280]">CRM Records</span>
+                </div>
+                <span className="text-[12.5px] font-medium text-[#374151]">{crmStats.totalContacts} contacts · {crmStats.totalDeals} deals</span>
+              </div>
+              <div className="px-5 py-3 flex items-center justify-between">
+                <span className="text-[12.5px] text-[#6b7280]">Syncs Today</span>
+                <div className="flex items-center gap-1.5">
+                  {syncStats.failed > 0 && <AlertCircle size={12} className="text-amber-500" />}
+                  <span className={`text-[12.5px] font-medium ${syncStats.failed > 0 ? "text-amber-600" : "text-[#374151]"}`}>
+                    {syncStats.today} · {syncStats.failed} failed
+                  </span>
+                </div>
+              </div>
+              <div className="px-5 py-3 flex items-center justify-between">
+                <span className="text-[12.5px] text-[#6b7280]">Failed Jobs</span>
+                <div className="flex items-center gap-1.5">
+                  {infraHealth.failedJobs > 0 && <AlertCircle size={12} className="text-red-500" />}
+                  <span className={`text-[12.5px] font-medium ${infraHealth.failedJobs > 0 ? "text-red-600" : "text-[#374151]"}`}>
+                    {infraHealth.failedJobs}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Activity feed */}
           <div className="border border-[#e5e7eb] rounded-xl overflow-hidden bg-white">
