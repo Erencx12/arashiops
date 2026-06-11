@@ -3,12 +3,12 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
-  CreditCard, CheckCircle, AlertTriangle, Clock, TrendingUp, ChevronRight,
+  CreditCard, CheckCircle, AlertTriangle, Clock, TrendingUp, ChevronRight, FileText,
 } from "lucide-react";
 import { Badge } from "@/components/dashboard/Badge";
 import type {
   DbSubscription, DbBillingPayment, DbRefund, DbPlan,
-  DbPlanChange, DbBillingRenewal,
+  DbPlanChange, DbBillingRenewal, DbInvoice,
 } from "@/lib/db-types";
 import { changePlanAction, createCheckoutAction } from "@/lib/billing-actions";
 
@@ -22,6 +22,7 @@ type Props = {
   renewalHistory: DbBillingRenewal[];
   stripeConfigured: boolean;
   activeProvider?: string;
+  invoices: DbInvoice[];
 };
 
 function fmt(n: number) {
@@ -82,7 +83,7 @@ function PlanCard({ plan, current, onSelect }: {
 }
 
 export function ClientBillingView({
-  clientId, subscription, payments, refunds, plans, planChanges, renewalHistory, stripeConfigured, activeProvider,
+  clientId, subscription, payments, refunds, plans, planChanges, renewalHistory, stripeConfigured, activeProvider, invoices,
 }: Props) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -214,6 +215,41 @@ export function ClientBillingView({
               </button>
             )}
           </div>
+
+          {/* Pending Invoices */}
+          {invoices.filter(i => i.status === "Sent" || i.status === "Draft").length > 0 && (
+            <div className="bg-white border border-[#e5e7eb] rounded-lg">
+              <div className="px-4 py-3 border-b border-[#e5e7eb] flex items-center gap-2">
+                <FileText size={13} className="text-amber-500" />
+                <h3 className="text-[13px] font-semibold text-[#111111]">Pending Invoices</h3>
+                <span className="ml-auto text-[11px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-full font-medium">
+                  {invoices.filter(i => i.status === "Sent" || i.status === "Draft").length} outstanding
+                </span>
+              </div>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[#f3f4f6]">
+                    {["Invoice", "Amount", "Due Date", "Status"].map(h => (
+                      <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wide">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoices.filter(i => i.status === "Sent" || i.status === "Draft").map(inv => (
+                    <tr key={inv.id} className="border-b border-[#f3f4f6] last:border-0">
+                      <td className="px-4 py-3 text-[13px] font-medium text-[#111111]">{inv.invoice_number}</td>
+                      <td className="px-4 py-3 text-[13px] font-semibold text-[#111111]">{fmtFull(inv.amount)}</td>
+                      <td className="px-4 py-3 text-[13px] text-[#6b7280]">{inv.due_date ?? "—"}</td>
+                      <td className="px-4 py-3"><Badge label={inv.status} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="px-4 py-3 border-t border-[#f3f4f6] bg-[#fafafa]">
+                <p className="text-[12px] text-[#6b7280]">To pay, contact your Arashi OPS account manager or reply to the invoice email.</p>
+              </div>
+            </div>
+          )}
 
           {/* Status-specific alerts */}
           {subscription?.status === "Past Due" && (

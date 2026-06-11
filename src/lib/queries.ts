@@ -196,6 +196,20 @@ export function getContracts(): Promise<DbContract[]> {
 
 // ─── Invoices ─────────────────────────────────────────────────────────────────
 
+export function getInvoicesByClient(clientId: number): Promise<DbInvoice[]> {
+  return cast<DbInvoice>(sql`
+    SELECT inv.id, inv.invoice_number, inv.client_id, c.company_name AS client_name,
+           c.tier, inv.amount, inv.status,
+           to_char(inv.issue_date, 'Mon DD, YYYY') AS issue_date,
+           to_char(inv.due_date, 'Mon DD, YYYY') AS due_date,
+           to_char(inv.paid_date, 'Mon DD, YYYY') AS paid_date
+    FROM invoices inv
+    JOIN clients c ON c.id = inv.client_id
+    WHERE inv.client_id = ${clientId}
+    ORDER BY inv.issue_date DESC
+  `);
+}
+
 export function getInvoices(): Promise<DbInvoice[]> {
   return cast<DbInvoice>(sql`
     SELECT inv.id, inv.invoice_number, inv.client_id, c.company_name AS client_name,
