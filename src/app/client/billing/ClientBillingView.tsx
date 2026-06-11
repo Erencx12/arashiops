@@ -40,7 +40,9 @@ function fmtDate(d: string | null) {
 function PlanCard({ plan, current, onSelect }: {
   plan: DbPlan; current: DbSubscription | null; onSelect: (slug: string) => void;
 }) {
-  const isCurrent = current?.plan_id === plan.id;
+  const isCurrent = (current?.plan_id != null && current.plan_id === plan.id) ||
+                    current?.plan_name === plan.name ||
+                    current?.tier === plan.tier;
   const isUpgrade = current?.mrr != null && plan.price_monthly > current.mrr;
   const isDowngrade = current?.mrr != null && plan.price_monthly < current.mrr;
   return (

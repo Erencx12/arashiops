@@ -13,6 +13,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { Badge } from "./Badge";
 import { LogoMark } from "@/components/Logo";
 import { LogoutButton } from "./LogoutButton";
 
@@ -171,10 +172,11 @@ type Props = {
   role: "owner" | "client";
   userName: string;
   userSub: string;
+  userTier?: string;
   children: React.ReactNode;
 };
 
-export function DashboardShell({ role, userName, userSub, children }: Props) {
+export function DashboardShell({ role, userName, userSub, userTier, children }: Props) {
   const pathname = usePathname();
   const navSections = role === "owner" ? OWNER_NAV : CLIENT_NAV;
 
@@ -265,9 +267,15 @@ export function DashboardShell({ role, userName, userSub, children }: Props) {
               <p className="text-[12px] font-medium text-[#111111] truncate leading-tight">
                 {userName}
               </p>
-              <p className="text-[10.5px] text-[#9ca3af] truncate leading-tight">
-                {userSub}
-              </p>
+              {userTier ? (
+                <div className="mt-0.5">
+                  <Badge label={userTier} />
+                </div>
+              ) : (
+                <p className="text-[10.5px] text-[#9ca3af] truncate leading-tight">
+                  {userSub}
+                </p>
+              )}
             </div>
           </div>
         </div>

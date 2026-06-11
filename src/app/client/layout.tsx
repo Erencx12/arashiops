@@ -9,7 +9,7 @@ export default async function ClientLayout({ children }: { children: React.React
   const userSub = client ? `${client.tier} Plan` : "Client";
 
   return (
-    <DashboardShell role="client" userName={userName} userSub={userSub}>
+    <DashboardShell role="client" userName={userName} userSub={userSub} userTier={client?.tier ?? undefined}>
       {children}
     </DashboardShell>
   );
