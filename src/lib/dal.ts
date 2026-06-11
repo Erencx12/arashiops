@@ -6,7 +6,12 @@ import type { SessionPayload } from "./session";
 export const verifySession = cache(async (): Promise<SessionPayload> => {
   const session = await getSession();
   if (!session?.userId) redirect("/login");
-  return session;
+  // JWT deserializes numbers as floats — coerce to integers for SQL
+  return {
+    ...session,
+    userId: Math.trunc(Number(session.userId)),
+    clientId: session.clientId != null ? Math.trunc(Number(session.clientId)) : null,
+  };
 });
 
 export const verifyOwnerSession = cache(async (): Promise<SessionPayload> => {
@@ -21,6 +26,8 @@ export const verifyClientSession = cache(
     const session = await verifySession();
     if (session.role !== "client") redirect("/admin");
     if (!session.clientId) redirect("/login");
-    return session as SessionPayload & { clientId: number };
+    // JWT deserializes numbers as floats — coerce to integer for SQL
+    const clientId = Math.trunc(Number(session.clientId));
+    return { ...session, clientId } as SessionPayload & { clientId: number };
   }
 );
