@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useActionState } from "react";
-import { Plus, TrendingUp, CreditCard } from "lucide-react";
+import { Plus, TrendingUp, CreditCard, Printer } from "lucide-react";
 import { Badge } from "@/components/dashboard/Badge";
 import type { DbClient, DbInvoice, InvoiceStatus } from "@/lib/db-types";
 import { createInvoiceAction, logPaymentAction, updateInvoiceStatusAction } from "@/lib/payment-actions";
@@ -115,12 +115,23 @@ export function InvoicesView({ invoices, clients }: Props) {
                 <td className="px-4 py-3.5 text-[12.5px] text-[#6b7280]">{inv.due_date}</td>
                 <td className="px-4 py-3.5 text-[12.5px] text-[#6b7280]">{inv.paid_date ?? "—"}</td>
                 <td className="px-4 py-3.5">
-                  {inv.status !== "Paid" && inv.status !== "Cancelled" && (
-                    <button onClick={() => openPayment(inv)}
-                      className="text-[11.5px] text-[#6b7280] hover:text-[#111111] underline transition-colors">
-                      Log Payment
-                    </button>
-                  )}
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={`/admin/invoices/${inv.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11.5px] text-[#6b7280] hover:text-[#111111] transition-colors"
+                      title="View / Print invoice"
+                    >
+                      <Printer size={12} /> Print
+                    </a>
+                    {inv.status !== "Paid" && inv.status !== "Cancelled" && (
+                      <button onClick={() => openPayment(inv)}
+                        className="text-[11.5px] text-[#6b7280] hover:text-[#111111] underline transition-colors">
+                        Log Payment
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -165,7 +176,6 @@ export function InvoicesView({ invoices, clients }: Props) {
                     <select name="tier" defaultValue="Gold" className={`${inputCls} bg-white`}>
                       <option>Silver</option>
                       <option>Gold</option>
-                      <option>Platinum</option>
                       <option>Enterprise</option>
                     </select>
                   </div>

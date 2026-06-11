@@ -48,7 +48,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-2 gap-4">
             <Field label="First name" value="Soham" />
             <Field label="Last name" value="Das" />
-            <Field label="Email" value="yo.gamegenesis@gmail.com" type="email" />
+            <Field label="Email" value="ellisongod@gmail.com" type="email" />
             <Field label="Role" value="Owner" />
           </div>
         </Section>

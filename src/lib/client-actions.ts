@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { verifyOwnerSession } from "./dal";
+import { verifyOwnerSession, verifyClientSession } from "./dal";
 import {
   updateClientTier, updateClientStatus, updateClientInfo,
   createClientNote, deleteClientNote,
@@ -144,5 +144,32 @@ export async function deleteClientNoteAction(
     return { ok: true };
   } catch {
     return { ok: false };
+  }
+}
+
+// ─── Client self-service: save profile ───────────────────────────────────────
+
+const ClientProfileSchema = z.object({
+  contact_name: z.string().min(1, "Name is required"),
+  email:        z.string().email("Valid email required"),
+});
+
+export async function saveClientProfileAction(
+  _prev: { error?: string; success?: boolean } | null,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  try {
+    const session = await verifyClientSession();
+    const parsed = ClientProfileSchema.safeParse({
+      contact_name: formData.get("contact_name"),
+      email:        formData.get("email"),
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+    await updateClientInfo(session.clientId, parsed.data);
+    revalidatePath("/client/settings");
+    return { success: true };
+  } catch {
+    return { error: "Failed to save changes." };
   }
 }

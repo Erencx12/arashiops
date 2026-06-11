@@ -4,7 +4,7 @@ import {
   getBillingMetrics, getUpcomingRenewals, getPlanChanges,
   getBillingRenewalHistory, getClients, getBillingEvents,
 } from "@/lib/queries";
-import { isStripeConfigured } from "@/lib/stripe";
+import { getActiveProvider } from "@/lib/payments";
 import { BillingView } from "./BillingView";
 
 export const metadata = { title: "Billing Center — Arashi OPS" };
@@ -13,7 +13,7 @@ export default async function BillingPage() {
   await verifyOwnerSession();
   const [plans, subscriptions, payments, refunds, metrics, upcomingRenewals,
          planChanges, renewalHistory, clients, billingEvents] = await Promise.all([
-    getPlans(),
+    getPlans(true),
     getSubscriptions(),
     getBillingPayments(undefined, 100),
     getRefunds(undefined, 50),
@@ -24,7 +24,8 @@ export default async function BillingPage() {
     getClients(),
     getBillingEvents(20),
   ]);
-  const stripeConfigured = isStripeConfigured();
+  const provider       = getActiveProvider();
+  const stripeConfigured = provider.isConfigured();
   return (
     <BillingView
       plans={plans}

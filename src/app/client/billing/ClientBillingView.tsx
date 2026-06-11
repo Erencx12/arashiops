@@ -61,19 +61,19 @@ function PlanCard({ plan, current, onSelect }: {
         <p className="text-[12px] text-[#6b7280] mt-0.5">{fmt(plan.price_annual)}/yr <span className="text-emerald-600">Save {Math.round((1 - plan.price_annual / (plan.price_monthly * 12)) * 100)}%</span></p>
       )}
       {plan.description && <p className="text-[12px] text-[#6b7280] mt-2">{plan.description}</p>}
-      {!isCurrent && (
+      {!isCurrent && isUpgrade && (
         <button
           onClick={() => onSelect(plan.slug)}
-          className={`w-full mt-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
-            isUpgrade
-              ? "bg-[#111111] text-white hover:bg-[#333]"
-              : isDowngrade
-              ? "text-[#374151] border border-[#e5e7eb] hover:bg-[#f3f4f6]"
-              : "bg-[#111111] text-white hover:bg-[#333]"
-          }`}
+          className="w-full mt-3 py-2 text-[13px] font-medium rounded-lg bg-[#111111] text-white hover:bg-[#333] transition-colors"
         >
-          {isUpgrade ? "Upgrade" : isDowngrade ? "Downgrade" : "Select"}
+          Upgrade
         </button>
+      )}
+      {!isCurrent && isDowngrade && (
+        <div className="mt-3 px-3 py-2 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg text-center">
+          <p className="text-[11.5px] text-[#6b7280]">Downgrades take effect at next renewal.</p>
+          <p className="text-[11px] text-[#9ca3af] mt-0.5">Contact your account manager.</p>
+        </div>
       )}
     </div>
   );
@@ -89,9 +89,15 @@ export function ClientBillingView({
   const [activeTab, setActiveTab] = useState<"overview" | "plans" | "history">("overview");
 
   function handlePlanSelect(slug: string) {
-    if (!confirm("Confirm plan change?")) return;
+    const plan = plans.find(p => p.slug === slug);
+    const isUpgrade = !subscription || (plan?.price_monthly ?? 0) > (subscription?.mrr ?? 0);
+
+    if (!isUpgrade) return; // downgrades are blocked — handled below in PlanCard
+
+    if (!confirm(`Upgrade to ${plan?.name}? You'll be taken to PayPal to complete payment.`)) return;
     setLoading(true);
     setError(null);
+
     startTransition(async () => {
       if (stripeConfigured) {
         const res = await createCheckoutAction(clientId, slug);
@@ -99,18 +105,9 @@ export function ClientBillingView({
         if (res.checkoutUrl) { window.location.href = res.checkoutUrl; return; }
         if (res.demoMode) { router.refresh(); setLoading(false); return; }
       } else {
-        // Demo mode: use changePlanAction directly
-        const fd = new FormData();
-        fd.set("clientId", String(clientId));
-        fd.set("newPlanSlug", slug);
-        fd.set("changeType", subscription?.mrr != null
-          ? (plans.find(p => p.slug === slug)?.price_monthly ?? 0) > subscription.mrr ? "upgrade" : "downgrade"
-          : "upgrade");
-        const res = await changePlanAction(null, fd);
-        if (res.error) setError(res.error);
-        else router.refresh();
-        setLoading(false);
+        setError("Payment provider not configured. Contact your account manager.");
       }
+      setLoading(false);
     });
   }
 
@@ -194,7 +191,7 @@ export function ClientBillingView({
                 <div>
                   <p className="text-[11px] text-[#9ca3af]">Payment Method</p>
                   <p className="text-[13px] text-[#374151] mt-0.5">
-                    {activeProvider === "stripe" ? "Card via Stripe" : "Manual / Invoice"}
+                    {activeProvider === "stripe" ? "Card via Stripe" : activeProvider === "paypal" ? "PayPal" : "Manual / Invoice"}
                   </p>
                 </div>
                 {subscription.notes && (

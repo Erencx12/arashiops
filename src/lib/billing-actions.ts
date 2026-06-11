@@ -53,7 +53,7 @@ export async function createCheckoutAction(clientId: number, planSlug: string): 
     let priceId: string | null = null;
     if (provider.providerName === "paypal") {
       priceId = (plan as any).paypal_plan_id ?? null;
-      if (!priceId) return { error: "This plan has no PayPal Plan ID. Add it under Billing → Plans." };
+      if (!priceId) return { error: "This plan has no PayPal Plan ID configured. Contact your account manager." };
     } else {
       priceId = plan.stripe_price_id ?? null;
       if (!priceId) return { error: "This plan has no Stripe Price ID configured." };

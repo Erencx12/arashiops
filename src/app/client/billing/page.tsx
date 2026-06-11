@@ -28,7 +28,7 @@ export default async function ClientBillingPage() {
       plans={plans}
       planChanges={planChanges}
       renewalHistory={renewalHistory}
-      stripeConfigured={provider.isConfigured() && provider.providerName === "stripe"}
+      stripeConfigured={provider.isConfigured()}
       activeProvider={provider.isConfigured() ? provider.providerName : undefined}
     />
   );

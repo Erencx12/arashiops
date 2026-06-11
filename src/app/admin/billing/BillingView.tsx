@@ -344,7 +344,7 @@ export function BillingView({
           {!stripeConfigured && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-[12px] text-amber-700">
               <AlertCircle size={12} />
-              Demo mode — Stripe not configured
+              Demo mode — no payment provider configured
             </div>
           )}
           <Link

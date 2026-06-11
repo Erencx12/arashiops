@@ -17,7 +17,7 @@ async function seed() {
   // ── Users ────────────────────────────────────────────────────────────────
   await sql`
     INSERT INTO users (name, email, role) VALUES
-      ('Soham Das', 'yo.gamegenesis@gmail.com', 'owner')
+      ('Soham Das', 'ellisongod@gmail.com', 'owner')
     ON CONFLICT (email) DO NOTHING
   `;
 

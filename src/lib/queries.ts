@@ -995,6 +995,25 @@ export function getInvoicesEnhanced(): Promise<DbInvoice[]> {
   `);
 }
 
+export async function getInvoiceById(id: number): Promise<(DbInvoice & { contact_name: string; client_email: string }) | null> {
+  const rows = await cast<DbInvoice & { contact_name: string; client_email: string }>(sql`
+    SELECT inv.id, inv.invoice_number, inv.client_id, c.company_name AS client_name,
+           c.tier, inv.amount, inv.status,
+           to_char(inv.issue_date, 'Mon DD, YYYY') AS issue_date,
+           to_char(inv.due_date, 'Mon DD, YYYY') AS due_date,
+           to_char(inv.paid_date, 'Mon DD, YYYY') AS paid_date,
+           inv.description,
+           COALESCE(inv.deal_id, NULL) AS deal_id,
+           COALESCE(inv.proposal_id, NULL) AS proposal_id,
+           c.contact_name, c.email AS client_email
+    FROM invoices inv
+    JOIN clients c ON c.id = inv.client_id
+    WHERE inv.id = ${id}
+    LIMIT 1
+  `);
+  return rows[0] ?? null;
+}
+
 export async function createInvoice(data: {
   clientId: number; amount: number; status: string;
   issueDate: string; dueDate: string; description?: string | null;

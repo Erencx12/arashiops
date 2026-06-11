@@ -26,7 +26,7 @@ export function ProposalDetail({ proposal }: { proposal: DbProposal }) {
             <div className="flex items-start justify-between mb-8">
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-widest text-[#9ca3af] mb-1">Arashi OPS</p>
-                <p className="text-[11px] text-[#9ca3af]">yo.gamegenesis@gmail.com</p>
+                <p className="text-[11px] text-[#9ca3af]">ellisongod@gmail.com</p>
               </div>
               <Badge label={proposal.status} />
             </div>

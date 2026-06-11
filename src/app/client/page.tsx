@@ -60,7 +60,7 @@ export default async function ClientOverview() {
           <div className="md:pl-6 pt-4 md:pt-0">
             <p className="text-[10.5px] font-semibold uppercase tracking-widest text-[#9ca3af] mb-1.5">Engagement Lead</p>
             <p className="text-[14px] font-semibold text-[#111111]">{client.owner}</p>
-            <p className="text-[12px] text-[#9ca3af]">yo.gamegenesis@gmail.com</p>
+            <p className="text-[12px] text-[#9ca3af]">ellisongod@gmail.com</p>
           </div>
           <div className="md:pl-6 pt-4 md:pt-0">
             <p className="text-[10.5px] font-semibold uppercase tracking-widest text-[#9ca3af] mb-1.5">Start Date</p>

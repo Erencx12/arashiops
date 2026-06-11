@@ -34,9 +34,7 @@ export function ContactPageContent() {
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
-    // Simulate network delay — will connect to backend in Phase 2
     await new Promise((r) => setTimeout(r, 800));
-    console.log("Contact form submission:", data);
     setSubmitted(true);
   };
 

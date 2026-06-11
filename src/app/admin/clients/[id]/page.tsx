@@ -1,18 +1,21 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft, Building2, Mail, Calendar, DollarSign, Activity, ClipboardList } from "lucide-react";
+import { ArrowLeft, Building2, Calendar, DollarSign, Activity, ClipboardList } from "lucide-react";
 import { Badge } from "@/components/dashboard/Badge";
 import { verifyOwnerSession } from "@/lib/dal";
 import {
   getClientById, getProjectsByClient, getOnboardingProgress,
-  getNotesByClient, getTasksByClient, getNotifications,
+  getNotesByClient, getTasksByClient,
 } from "@/lib/queries";
 import { ClientDetail } from "./ClientDetail";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const client = await getClientById(Number(id));
-  return { title: client ? `${client.company_name} — Arashi OPS` : "Client" };
+  try {
+    const { id } = await params;
+    const client = await getClientById(Number(id));
+    return { title: client ? `${client.company_name} — Arashi OPS` : "Client" };
+  } catch {
+    return { title: "Client" };
+  }
 }
 
 export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -20,15 +23,37 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   const { id } = await params;
   const clientId = Number(id);
 
-  const [client, projects, onboarding, notes, tasks] = await Promise.all([
-    getClientById(clientId),
-    getProjectsByClient(clientId),
-    getOnboardingProgress(clientId),
-    getNotesByClient(clientId),
-    getTasksByClient(clientId),
-  ]);
+  let client, projects, onboarding, notes, tasks;
+  try {
+    [client, projects, onboarding, notes, tasks] = await Promise.all([
+      getClientById(clientId),
+      getProjectsByClient(clientId),
+      getOnboardingProgress(clientId),
+      getNotesByClient(clientId),
+      getTasksByClient(clientId),
+    ]);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return (
+      <div className="px-8 py-8">
+        <div className="border border-red-200 rounded-xl p-6 bg-red-50">
+          <p className="text-[14px] font-bold text-red-800 mb-2">DB Error loading client {clientId}</p>
+          <pre className="text-[12px] text-red-600 whitespace-pre-wrap">{msg}</pre>
+        </div>
+      </div>
+    );
+  }
 
-  if (!client) notFound();
+  if (!client) {
+    return (
+      <div className="px-8 py-8">
+        <div className="border border-amber-200 rounded-xl p-6 bg-amber-50">
+          <p className="text-[14px] font-bold text-amber-800">Client {clientId} not found in DB</p>
+          <Link href="/admin/clients" className="text-[12.5px] text-blue-600 underline mt-2 block">← Back to clients</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-8 py-8">
