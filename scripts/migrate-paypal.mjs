@@ -46,6 +46,18 @@ async function main() {
     `)
   );
 
+  await run("Set Silver PayPal plan ID", () =>
+    sql.query(`UPDATE plans SET paypal_plan_id = 'P-7T9115575Y9749347NIVFM7I' WHERE slug = 'silver' OR (LOWER(name) = 'silver' AND tier = 'Silver')`)
+  );
+
+  await run("Set Gold PayPal plan ID", () =>
+    sql.query(`UPDATE plans SET paypal_plan_id = 'P-3SJ0108804709451BNIVFOXI' WHERE slug = 'gold' OR (LOWER(name) = 'gold' AND tier = 'Gold')`)
+  );
+
+  await run("Set Platinum PayPal plan ID", () =>
+    sql.query(`UPDATE plans SET paypal_plan_id = 'P-8H2234985H6863234NIVFQUQ' WHERE slug = 'platinum' OR (LOWER(name) = 'platinum' AND tier = 'Platinum')`)
+  );
+
   console.log("\nPayPal migration complete!");
 }
 
