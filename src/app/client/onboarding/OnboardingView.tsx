@@ -25,7 +25,7 @@ export function OnboardingView({ alreadySubmitted, existingForm, requirementsSub
         <div>
           <p className="text-[14px] font-semibold text-emerald-900">Questionnaire submitted</p>
           <p className="text-[13px] text-emerald-700 mt-1 leading-relaxed">
-            We&apos;ve received your information. Your team will review it and schedule your kickoff call within 48 hours.
+            We&apos;ve received your information. Our team will review it and schedule your kickoff call within 8 hours.
           </p>
         </div>
       </div>
