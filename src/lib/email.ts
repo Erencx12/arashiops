@@ -155,20 +155,46 @@ export async function sendPasswordResetEmail(to: string, resetToken: string): Pr
 }
 
 export async function sendInvoiceEmail(to: string, clientName: string, invoiceNumber: string, amount: number, dueDate: string): Promise<SendResult> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://arashiops.vercel.app";
+  const portalLink = `${appUrl}/client/billing`;
   const html = `
-    <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#111111">
-      <h2 style="margin:0 0 16px">Invoice ${invoiceNumber}</h2>
-      <p>Hi ${clientName},</p>
-      <p>Please find your invoice details below.</p>
-      <div style="background:#f3f4f6;border-radius:8px;padding:16px;margin:24px 0">
-        <p style="margin:0;font-size:13px;color:#6b7280">Invoice Number</p>
-        <p style="margin:4px 0 12px;font-weight:600">${invoiceNumber}</p>
-        <p style="margin:0;font-size:13px;color:#6b7280">Amount Due</p>
-        <p style="margin:4px 0 12px;font-weight:600;font-size:18px">$${amount.toLocaleString()}</p>
-        <p style="margin:0;font-size:13px;color:#6b7280">Due Date</p>
-        <p style="margin:4px 0;font-weight:600">${dueDate}</p>
+    <div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+      <!-- Header -->
+      <div style="background:#111111;padding:28px 32px">
+        <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff;letter-spacing:-0.3px">Arashi OPS</p>
+        <p style="margin:4px 0 0;font-size:12px;color:#9ca3af">Revenue Operations Agency</p>
       </div>
-      <p style="color:#6b7280;font-size:13px">Contact your Arashi OPS account manager with any questions.</p>
+      <!-- Body -->
+      <div style="padding:32px">
+        <p style="margin:0 0 6px;font-size:22px;font-weight:700;color:#111111">Invoice ${invoiceNumber}</p>
+        <p style="margin:0 0 24px;font-size:14px;color:#6b7280">Hi ${clientName}, a new invoice has been issued for your account.</p>
+        <!-- Invoice details box -->
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px 24px;margin-bottom:28px">
+          <table style="width:100%;border-collapse:collapse">
+            <tr>
+              <td style="padding:0 0 14px;font-size:12px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Invoice Number</td>
+              <td style="padding:0 0 14px;font-size:13px;color:#111111;font-weight:600;text-align:right">${invoiceNumber}</td>
+            </tr>
+            <tr>
+              <td style="padding:0 0 14px;font-size:12px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Amount Due</td>
+              <td style="padding:0 0 14px;font-size:22px;color:#111111;font-weight:700;text-align:right">$${amount.toLocaleString()}</td>
+            </tr>
+            <tr>
+              <td style="padding:0;font-size:12px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Due Date</td>
+              <td style="padding:0;font-size:13px;color:#111111;font-weight:600;text-align:right">${dueDate}</td>
+            </tr>
+          </table>
+        </div>
+        <!-- CTA -->
+        <div style="text-align:center;margin-bottom:28px">
+          <a href="${portalLink}" style="display:inline-block;background:#111111;color:#ffffff;font-size:14px;font-weight:600;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:-0.1px">View Invoice &amp; Pay →</a>
+        </div>
+        <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center">Questions? Reply to this email or contact your Arashi OPS account manager.</p>
+      </div>
+      <!-- Footer -->
+      <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 32px;text-align:center">
+        <p style="margin:0;font-size:11px;color:#9ca3af">Arashi OPS · arashiops.vercel.app</p>
+      </div>
     </div>
   `;
   return sendEmail({ to, subject: `Invoice ${invoiceNumber} — $${amount.toLocaleString()} due ${dueDate}`, html, template: "invoice" });
