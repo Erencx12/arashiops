@@ -2857,7 +2857,7 @@ export function getClientTemplates(): Promise<DbClientTemplate[]> {
            COALESCE(features, '{}') AS features, is_default,
            created_at::text AS created_at, updated_at::text AS updated_at
     FROM client_templates ORDER BY
-      CASE tier WHEN 'Silver' THEN 1 WHEN 'Gold' THEN 2 WHEN 'Platinum' THEN 3 ELSE 4 END
+      CASE tier WHEN 'Silver' THEN 1 WHEN 'Gold' THEN 2 ELSE 3 END
   `);
 }
 

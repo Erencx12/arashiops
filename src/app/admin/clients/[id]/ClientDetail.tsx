@@ -18,7 +18,7 @@ type Props = {
   clientId: number;
 };
 
-const TIERS = ["Silver", "Gold", "Platinum", "Enterprise"] as const;
+const TIERS = ["Silver", "Gold", "Enterprise"] as const;
 const STATUSES = ["Active", "Review", "Paused", "Suspended", "Archived"] as const;
 
 export function ClientDetail({ client, projects, notes, tasks, clientId }: Props) {

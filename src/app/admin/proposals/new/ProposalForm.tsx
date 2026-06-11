@@ -68,7 +68,6 @@ export function ProposalForm({ clients, deals, defaultDealId }: Props) {
           <select name="package" defaultValue={selectedDeal ? "Gold" : "Silver"} className={`${inputCls} bg-white`}>
             <option>Silver</option>
             <option>Gold</option>
-            <option>Platinum</option>
             <option>Enterprise</option>
           </select>
         </div>

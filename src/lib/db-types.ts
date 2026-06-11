@@ -1,6 +1,6 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
-export type Tier = "Silver" | "Gold" | "Platinum" | "Enterprise";
+export type Tier = "Silver" | "Gold" | "Enterprise";
 export type ClientStatus = "Active" | "Review" | "Paused" | "Churned" | "Suspended" | "Archived";
 export type ProjectStatus = "Pending" | "Planning" | "Active" | "Review" | "Waiting On Client" | "Completed" | "Paused" | "Cancelled";
 export type ApprovalStatus = "Pending" | "Approved" | "Revision Requested" | "Rejected";

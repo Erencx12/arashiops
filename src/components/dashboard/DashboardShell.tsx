@@ -120,53 +120,50 @@ const OWNER_NAV: NavSection[] = [
   },
 ];
 
-const CLIENT_NAV: NavSection[] = [
-  {
-    label: "Overview",
-    items: [
-      { label: "Overview", href: "/client", icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: "Getting Started",
-    items: [
-      { label: "Onboarding", href: "/client/onboarding", icon: ClipboardList },
-    ],
-  },
-  {
-    label: "Work",
-    items: [
-      { label: "Deliverables", href: "/client/deliverables", icon: Package },
-      { label: "Approvals",    href: "/client/approvals",    icon: SquareCheckBig, badge: 2 },
-      { label: "Files",        href: "/client/files",        icon: FolderOpen },
-    ],
-  },
-  {
-    label: "Analytics",
-    items: [
-      { label: "Reports",      href: "/client/reports", icon: BarChart2 },
-      { label: "Lead Tracker", href: "/client/leads",   icon: Target },
-    ],
-  },
-  {
-    label: "Billing",
-    items: [
-      { label: "Billing & Plans", href: "/client/billing", icon: CreditCard },
-    ],
-  },
-  {
-    label: "Revenue",
-    items: [
-      { label: "Revenue Dashboard", href: "/client/revenue", icon: DollarSign, locked: true },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { label: "Settings", href: "/client/settings", icon: Settings },
-    ],
-  },
-];
+function buildClientNav(revenueUnlocked: boolean): NavSection[] {
+  return [
+    {
+      label: "Overview",
+      items: [
+        { label: "Overview",           href: "/client",         icon: LayoutDashboard },
+        { label: "Revenue Dashboard",  href: "/client/revenue", icon: DollarSign, locked: !revenueUnlocked },
+      ],
+    },
+    {
+      label: "Getting Started",
+      items: [
+        { label: "Onboarding", href: "/client/onboarding", icon: ClipboardList },
+      ],
+    },
+    {
+      label: "Work",
+      items: [
+        { label: "Deliverables", href: "/client/deliverables", icon: Package },
+        { label: "Approvals",    href: "/client/approvals",    icon: SquareCheckBig, badge: 2 },
+        { label: "Files",        href: "/client/files",        icon: FolderOpen },
+      ],
+    },
+    {
+      label: "Analytics",
+      items: [
+        { label: "Reports",      href: "/client/reports", icon: BarChart2 },
+        { label: "Lead Tracker", href: "/client/leads",   icon: Target },
+      ],
+    },
+    {
+      label: "Billing",
+      items: [
+        { label: "Billing & Plans", href: "/client/billing", icon: CreditCard },
+      ],
+    },
+    {
+      label: "Account",
+      items: [
+        { label: "Settings", href: "/client/settings", icon: Settings },
+      ],
+    },
+  ];
+}
 
 type Props = {
   role: "owner" | "client";
@@ -178,7 +175,8 @@ type Props = {
 
 export function DashboardShell({ role, userName, userSub, userTier, children }: Props) {
   const pathname = usePathname();
-  const navSections = role === "owner" ? OWNER_NAV : CLIENT_NAV;
+  const revenueUnlocked = userTier === "Gold" || userTier === "Enterprise";
+  const navSections = role === "owner" ? OWNER_NAV : buildClientNav(revenueUnlocked);
 
   const initials = userName
     .split(" ")

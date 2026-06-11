@@ -51,7 +51,7 @@ export function ClientsTable({ clients }: { clients: DbClient[] }) {
           />
         </div>
         <div className="flex items-center gap-1.5">
-          {["All", "Silver", "Gold", "Platinum"].map((t) => (
+          {["All", "Silver", "Gold", "Enterprise"].map((t) => (
             <button
               key={t}
               onClick={() => setTierFilter(t)}

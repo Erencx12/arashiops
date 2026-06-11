@@ -38,7 +38,6 @@ const styles: Record<string, string> = {
   // Tier
   Silver:              "bg-[#f3f4f6] text-[#374151] border-[#e5e7eb]",
   Gold:                "bg-amber-50 text-amber-700 border-amber-100",
-  Platinum:            "bg-blue-50 text-blue-700 border-blue-100",
   Enterprise:          "bg-violet-50 text-violet-700 border-violet-100",
   // Milestone
   "In Review":         "bg-blue-50 text-blue-700 border-blue-100",

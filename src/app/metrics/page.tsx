@@ -44,7 +44,7 @@ export default async function MetricsPage() {
     .filter((i) => i.status === "Paid" && i.issue_date.startsWith("Jun"))
     .reduce((s, i) => s + i.amount, 0);
 
-  const tierDist = (["Platinum", "Gold", "Silver"] as const).map((tier) => {
+  const tierDist = (["Enterprise", "Gold", "Silver"] as const).map((tier) => {
     const group = clients.filter((c) => c.tier === tier);
     return {
       tier,

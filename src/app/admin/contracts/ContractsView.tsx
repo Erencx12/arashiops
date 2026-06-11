@@ -74,7 +74,6 @@ export function ContractsView({ contracts, clients }: Props) {
               <select name="tier" defaultValue="Gold" className={`${inputCls} bg-white`}>
                 <option>Silver</option>
                 <option>Gold</option>
-                <option>Platinum</option>
                 <option>Enterprise</option>
               </select>
             </div>
