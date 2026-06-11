@@ -26,46 +26,53 @@ function cast<T>(p: Promise<unknown>): Promise<T[]> {
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
-const CLIENT_COLS = sql.unsafe(`
-  id, company_name, contact_name, email, tier, status,
-  monthly_value, industry, owner, health_score,
-  to_char(renewal_date, 'Mon YYYY') AS renewal_date,
-  to_char(start_date, 'Mon YYYY') AS start_date,
-  created_at,
-  COALESCE(tags, '{}') AS tags,
-  contract_status,
-  internal_notes
-`);
-
 export function getClients(): Promise<DbClient[]> {
-  return cast<DbClient>(sql`SELECT ${CLIENT_COLS} FROM clients ORDER BY created_at ASC`);
+  return cast<DbClient>(sql`
+    SELECT id, company_name, contact_name, email, tier, status,
+           monthly_value, industry, owner, health_score,
+           to_char(renewal_date, 'Mon YYYY') AS renewal_date,
+           to_char(start_date, 'Mon YYYY') AS start_date,
+           created_at, COALESCE(tags, '{}') AS tags,
+           contract_status, internal_notes
+    FROM clients ORDER BY created_at ASC
+  `);
 }
 
 export async function getClientById(id: number): Promise<DbClient | null> {
-  const rows = await cast<DbClient>(sql`SELECT ${CLIENT_COLS} FROM clients WHERE id = ${id}`);
+  const rows = await cast<DbClient>(sql`
+    SELECT id, company_name, contact_name, email, tier, status,
+           monthly_value, industry, owner, health_score,
+           to_char(renewal_date, 'Mon YYYY') AS renewal_date,
+           to_char(start_date, 'Mon YYYY') AS start_date,
+           created_at, COALESCE(tags, '{}') AS tags,
+           contract_status, internal_notes
+    FROM clients WHERE id = ${id}
+  `);
   return rows[0] ?? null;
 }
 
 export async function getClientByName(name: string): Promise<DbClient | null> {
-  const rows = await cast<DbClient>(sql`SELECT ${CLIENT_COLS} FROM clients WHERE company_name = ${name}`);
+  const rows = await cast<DbClient>(sql`
+    SELECT id, company_name, contact_name, email, tier, status,
+           monthly_value, industry, owner, health_score,
+           to_char(renewal_date, 'Mon YYYY') AS renewal_date,
+           to_char(start_date, 'Mon YYYY') AS start_date,
+           created_at, COALESCE(tags, '{}') AS tags,
+           contract_status, internal_notes
+    FROM clients WHERE company_name = ${name}
+  `);
   return rows[0] ?? null;
 }
 
 // ─── Projects ─────────────────────────────────────────────────────────────────
 
-const PROJECT_COLS = sql.unsafe(`
-  p.id, p.client_id, c.company_name AS client_name, p.title,
-  p.status, p.progress, p.start_date,
-  to_char(p.deadline, 'Mon DD, YYYY') AS deadline,
-  p.agent,
-  COALESCE(p.priority, 'Medium') AS priority,
-  p.description,
-  p.assigned_owner
-`);
-
 export function getProjects(): Promise<DbProject[]> {
   return cast<DbProject>(sql`
-    SELECT ${PROJECT_COLS}
+    SELECT p.id, p.client_id, c.company_name AS client_name, p.title,
+           p.status, p.progress, p.start_date,
+           to_char(p.deadline, 'Mon DD, YYYY') AS deadline,
+           p.agent, COALESCE(p.priority, 'Medium') AS priority,
+           p.description, p.assigned_owner
     FROM projects p JOIN clients c ON c.id = p.client_id
     ORDER BY p.created_at ASC
   `);
@@ -73,7 +80,11 @@ export function getProjects(): Promise<DbProject[]> {
 
 export function getProjectsByClient(clientId: number): Promise<DbProject[]> {
   return cast<DbProject>(sql`
-    SELECT ${PROJECT_COLS}
+    SELECT p.id, p.client_id, c.company_name AS client_name, p.title,
+           p.status, p.progress, p.start_date,
+           to_char(p.deadline, 'Mon DD, YYYY') AS deadline,
+           p.agent, COALESCE(p.priority, 'Medium') AS priority,
+           p.description, p.assigned_owner
     FROM projects p JOIN clients c ON c.id = p.client_id
     WHERE p.client_id = ${clientId}
     ORDER BY p.created_at ASC
@@ -82,7 +93,11 @@ export function getProjectsByClient(clientId: number): Promise<DbProject[]> {
 
 export async function getProjectById(id: number): Promise<DbProject | null> {
   const rows = await cast<DbProject>(sql`
-    SELECT ${PROJECT_COLS}
+    SELECT p.id, p.client_id, c.company_name AS client_name, p.title,
+           p.status, p.progress, p.start_date,
+           to_char(p.deadline, 'Mon DD, YYYY') AS deadline,
+           p.agent, COALESCE(p.priority, 'Medium') AS priority,
+           p.description, p.assigned_owner
     FROM projects p JOIN clients c ON c.id = p.client_id
     WHERE p.id = ${id}
   `);
@@ -104,17 +119,11 @@ export function getAgentTasks(): Promise<DbAgentTask[]> {
 
 // ─── Approvals ────────────────────────────────────────────────────────────────
 
-const APPROVAL_COLS = sql.unsafe(`
-  a.id, a.type, a.title, a.client_id, c.company_name AS client_name,
-  a.agent, a.status, a.comment,
-  COALESCE(a.client_comment, NULL) AS client_comment,
-  COALESCE(a.deliverable_id, NULL) AS deliverable_id,
-  to_char(a.created_at, 'Mon DD, YYYY') AS created_at
-`);
-
 export function getApprovals(): Promise<DbApproval[]> {
   return cast<DbApproval>(sql`
-    SELECT ${APPROVAL_COLS}
+    SELECT a.id, a.type, a.title, a.client_id, c.company_name AS client_name,
+           a.agent, a.status, a.comment, a.client_comment, a.deliverable_id,
+           to_char(a.created_at, 'Mon DD, YYYY') AS created_at
     FROM approvals a JOIN clients c ON c.id = a.client_id
     ORDER BY a.created_at DESC
   `);
@@ -122,7 +131,9 @@ export function getApprovals(): Promise<DbApproval[]> {
 
 export function getApprovalsByClient(clientId: number): Promise<DbApproval[]> {
   return cast<DbApproval>(sql`
-    SELECT ${APPROVAL_COLS}
+    SELECT a.id, a.type, a.title, a.client_id, c.company_name AS client_name,
+           a.agent, a.status, a.comment, a.client_comment, a.deliverable_id,
+           to_char(a.created_at, 'Mon DD, YYYY') AS created_at
     FROM approvals a JOIN clients c ON c.id = a.client_id
     WHERE a.client_id = ${clientId}
     ORDER BY a.created_at DESC
@@ -131,18 +142,11 @@ export function getApprovalsByClient(clientId: number): Promise<DbApproval[]> {
 
 // ─── Content Items ────────────────────────────────────────────────────────────
 
-const CONTENT_COLS = sql.unsafe(`
-  ci.id, ci.client_id, c.company_name AS client_name, ci.type,
-  ci.title, ci.size_label, COALESCE(ci.tags, '{}') AS tags,
-  COALESCE(ci.status, 'Awaiting Approval') AS status,
-  COALESCE(ci.version, 'v1') AS version,
-  ci.project_id,
-  to_char(ci.created_at, 'Mon DD, YYYY') AS created_at
-`);
-
 export function getContentItems(): Promise<DbContentItem[]> {
   return cast<DbContentItem>(sql`
-    SELECT ${CONTENT_COLS}
+    SELECT ci.id, ci.client_id, c.company_name AS client_name, ci.type,
+           ci.title, ci.size_label, ci.tags, ci.status, ci.version,
+           ci.project_id, to_char(ci.created_at, 'Mon DD, YYYY') AS created_at
     FROM content_items ci JOIN clients c ON c.id = ci.client_id
     ORDER BY ci.created_at DESC
   `);
@@ -150,7 +154,9 @@ export function getContentItems(): Promise<DbContentItem[]> {
 
 export function getContentItemsByClient(clientId: number): Promise<DbContentItem[]> {
   return cast<DbContentItem>(sql`
-    SELECT ${CONTENT_COLS}
+    SELECT ci.id, ci.client_id, c.company_name AS client_name, ci.type,
+           ci.title, ci.size_label, ci.tags, ci.status, ci.version,
+           ci.project_id, to_char(ci.created_at, 'Mon DD, YYYY') AS created_at
     FROM content_items ci JOIN clients c ON c.id = ci.client_id
     WHERE ci.client_id = ${clientId}
     ORDER BY ci.created_at DESC
@@ -504,18 +510,15 @@ export async function updateMilestoneStatus(id: number, status: string): Promise
 
 // ─── Phase 5: Tasks ───────────────────────────────────────────────────────────
 
-const TASK_COLS = sql.unsafe(`
-  t.id, t.title, t.description, t.priority, t.status, t.assignee,
-  t.client_id, c.company_name AS client_name,
-  t.project_id, p.title AS project_title,
-  to_char(t.due_date, 'Mon DD, YYYY') AS due_date,
-  to_char(t.created_at, 'Mon DD, YYYY') AS created_at,
-  completed_at::text AS completed_at
-`);
 
 export function getTasks(): Promise<DbTask[]> {
   return cast<DbTask>(sql`
-    SELECT ${TASK_COLS}
+    SELECT t.id, t.title, t.description, t.priority, t.status, t.assignee,
+           t.client_id, c.company_name AS client_name,
+           t.project_id, p.title AS project_title,
+           to_char(t.due_date, 'Mon DD, YYYY') AS due_date,
+           to_char(t.created_at, 'Mon DD, YYYY') AS created_at,
+           completed_at::text AS completed_at
     FROM tasks t
     LEFT JOIN clients c ON c.id = t.client_id
     LEFT JOIN projects p ON p.id = t.project_id
@@ -527,7 +530,12 @@ export function getTasks(): Promise<DbTask[]> {
 
 export function getTasksByClient(clientId: number): Promise<DbTask[]> {
   return cast<DbTask>(sql`
-    SELECT ${TASK_COLS}
+    SELECT t.id, t.title, t.description, t.priority, t.status, t.assignee,
+           t.client_id, c.company_name AS client_name,
+           t.project_id, p.title AS project_title,
+           to_char(t.due_date, 'Mon DD, YYYY') AS due_date,
+           to_char(t.created_at, 'Mon DD, YYYY') AS created_at,
+           completed_at::text AS completed_at
     FROM tasks t
     LEFT JOIN clients c ON c.id = t.client_id
     LEFT JOIN projects p ON p.id = t.project_id
@@ -538,7 +546,12 @@ export function getTasksByClient(clientId: number): Promise<DbTask[]> {
 
 export function getTasksByProject(projectId: number): Promise<DbTask[]> {
   return cast<DbTask>(sql`
-    SELECT ${TASK_COLS}
+    SELECT t.id, t.title, t.description, t.priority, t.status, t.assignee,
+           t.client_id, c.company_name AS client_name,
+           t.project_id, p.title AS project_title,
+           to_char(t.due_date, 'Mon DD, YYYY') AS due_date,
+           to_char(t.created_at, 'Mon DD, YYYY') AS created_at,
+           completed_at::text AS completed_at
     FROM tasks t
     LEFT JOIN clients c ON c.id = t.client_id
     LEFT JOIN projects p ON p.id = t.project_id
