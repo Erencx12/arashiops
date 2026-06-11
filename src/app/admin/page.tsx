@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CheckSquare, Users, FolderKanban, Video, Activity, Plug, CheckCircle2, XCircle, AlertCircle, Mail, Search, BarChart2 } from "lucide-react";
+import { ArrowRight, CheckSquare, Users, FolderKanban, Video, Activity, Plug, CheckCircle2, XCircle, AlertCircle, Mail, Search, BarChart2, CreditCard } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Badge } from "@/components/dashboard/Badge";
 import {
@@ -15,6 +15,7 @@ import {
   getInstantlyStats,
   getCrmStats,
   getSyncStats,
+  getBillingMetrics,
 } from "@/lib/queries";
 
 export const metadata = { title: "Overview" };
@@ -38,7 +39,7 @@ function timeAgo(isoStr: string): string {
 }
 
 export default async function AdminOverview() {
-  const [stats, clients, projects, approvals, invoices, activity, infraHealth, emailStats, apolloLeadCount, instantlyStats, crmStats, syncStats] = await Promise.all([
+  const [stats, clients, projects, approvals, invoices, activity, infraHealth, emailStats, apolloLeadCount, instantlyStats, crmStats, syncStats, billingMetrics] = await Promise.all([
     getDashboardStats(),
     getClients(),
     getProjects(),
@@ -51,6 +52,7 @@ export default async function AdminOverview() {
     getInstantlyStats(),
     getCrmStats(),
     getSyncStats(),
+    getBillingMetrics(),
   ]);
 
   const overdue = invoices.filter((i) => i.status === "Overdue");
@@ -209,6 +211,46 @@ export default async function AdminOverview() {
               </div>
             </div>
           )}
+
+          {/* Billing Health */}
+          <div className="border border-[#e5e7eb] rounded-xl overflow-hidden bg-white">
+            <div className="px-5 py-4 border-b border-[#e5e7eb] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CreditCard size={13} className="text-[#9ca3af]" />
+                <p className="text-[13px] font-semibold text-[#111111]">Billing</p>
+              </div>
+              <Link href="/admin/billing" className="text-[12px] text-[#6b7280] hover:text-[#111111] transition-colors">
+                Manage
+              </Link>
+            </div>
+            <div className="divide-y divide-[#f3f4f6]">
+              <div className="px-5 py-3 flex items-center justify-between">
+                <span className="text-[12.5px] text-[#6b7280]">MRR</span>
+                <span className="text-[12.5px] font-semibold text-[#111111]">${billingMetrics.mrr.toLocaleString()}/mo</span>
+              </div>
+              <div className="px-5 py-3 flex items-center justify-between">
+                <span className="text-[12.5px] text-[#6b7280]">ARR</span>
+                <span className="text-[12.5px] font-medium text-[#374151]">${billingMetrics.arr.toLocaleString()}/yr</span>
+              </div>
+              <div className="px-5 py-3 flex items-center justify-between">
+                <span className="text-[12.5px] text-[#6b7280]">Active Subscriptions</span>
+                <span className="text-[12.5px] font-medium text-[#374151]">{billingMetrics.activeSubscriptions}</span>
+              </div>
+              {billingMetrics.pastDue > 0 && (
+                <div className="px-5 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <AlertCircle size={12} className="text-red-500" />
+                    <span className="text-[12.5px] text-red-600">Past Due</span>
+                  </div>
+                  <span className="text-[12.5px] font-medium text-red-600">{billingMetrics.pastDue}</span>
+                </div>
+              )}
+              <div className="px-5 py-3 flex items-center justify-between">
+                <span className="text-[12.5px] text-[#6b7280]">Renewals (30d)</span>
+                <span className="text-[12.5px] font-medium text-[#374151]">{billingMetrics.upcomingRenewals30d}</span>
+              </div>
+            </div>
+          </div>
 
           {/* Integration Health */}
           <div className="border border-[#e5e7eb] rounded-xl overflow-hidden bg-white">

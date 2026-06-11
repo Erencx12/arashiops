@@ -8,7 +8,9 @@ import {
   SquareCheckBig, FileText, Video, FileCheck, Receipt, Settings,
   Package, BarChart2, FolderOpen, Target, DollarSign, ListTodo, ClipboardList,
   Handshake, Phone,
-  Plug, Cpu, ScrollText, Zap,
+  Plug, Cpu, ScrollText, Zap, Server, Rocket, BookOpen, LifeBuoy, TestTube,
+  Brain, Sparkles, Search, Lightbulb,
+  CreditCard,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
@@ -70,6 +72,7 @@ const OWNER_NAV: NavSection[] = [
     items: [
       { label: "Contracts", href: "/admin/contracts", icon: FileCheck },
       { label: "Invoices",  href: "/admin/invoices",  icon: Receipt },
+      { label: "Billing",   href: "/admin/billing",   icon: CreditCard },
     ],
   },
   {
@@ -79,6 +82,27 @@ const OWNER_NAV: NavSection[] = [
       { label: "Jobs",         href: "/admin/jobs",         icon: Cpu },
       { label: "Logs",         href: "/admin/logs",         icon: ScrollText },
       { label: "Webhooks",     href: "/admin/webhooks",     icon: Zap },
+      { label: "System",       href: "/admin/system",       icon: Server },
+    ],
+  },
+  {
+    label: "Intelligence",
+    items: [
+      { label: "AI Hub",       href: "/admin/ai",          icon: Brain },
+      { label: "Lead Scoring", href: "/admin/ai/leads",    icon: Sparkles },
+      { label: "Research",     href: "/admin/ai/research", icon: Search },
+      { label: "Insights",     href: "/admin/ai/insights", icon: Lightbulb },
+      { label: "Prompts",      href: "/admin/ai/prompts",  icon: BookOpen },
+    ],
+  },
+  {
+    label: "Launch",
+    items: [
+      { label: "Launch Center", href: "/admin/launch",  icon: Rocket },
+      { label: "SOPs",          href: "/admin/sops",    icon: BookOpen },
+      { label: "Docs",          href: "/admin/docs",    icon: FileText },
+      { label: "Testing",       href: "/admin/testing", icon: TestTube },
+      { label: "Support",       href: "/admin/support", icon: LifeBuoy },
     ],
   },
   {
@@ -121,6 +145,12 @@ const CLIENT_NAV: NavSection[] = [
     items: [
       { label: "Reports",      href: "/client/reports", icon: BarChart2 },
       { label: "Lead Tracker", href: "/client/leads",   icon: Target },
+    ],
+  },
+  {
+    label: "Billing",
+    items: [
+      { label: "Billing & Plans", href: "/client/billing", icon: CreditCard },
     ],
   },
   {
@@ -178,12 +208,10 @@ export function DashboardShell({ role, userName, userSub, children }: Props) {
                 {section.label}
               </p>
               {section.items.map((item) => {
+                const EXACT_ONLY = ["/admin", "/metrics", "/client", "/admin/ai"];
                 const isActive =
                   pathname === item.href ||
-                  (item.href !== "/admin" &&
-                    item.href !== "/metrics" &&
-                    item.href !== "/client" &&
-                    pathname.startsWith(item.href));
+                  (!EXACT_ONLY.includes(item.href) && pathname.startsWith(item.href));
                 return (
                   <Link
                     key={item.href}

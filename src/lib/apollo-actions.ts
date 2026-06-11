@@ -9,6 +9,7 @@ import {
   createSyncHistory, completeSyncHistory,
   addSystemLog, createNotification,
 } from "./queries";
+import { verifyOwnerSession } from "./dal";
 
 const SearchSchema = z.object({
   query:       z.string().optional(),
@@ -41,6 +42,7 @@ export async function searchApolloAction(
   _prev: ApolloSearchState,
   formData: FormData
 ): Promise<ApolloSearchState> {
+  await verifyOwnerSession();
   const integ = await getIntegrationBySlug("apollo");
   if (!integ) return { error: "Apollo integration not found" };
 
@@ -113,6 +115,7 @@ export async function importApolloLeadsAction(
   leads: ApolloSearchResult[],
   clientId?: number
 ): Promise<{ success: boolean; imported: number; error?: string }> {
+  await verifyOwnerSession();
   const integ = await getIntegrationBySlug("apollo");
   if (!integ) return { success: false, imported: 0, error: "Apollo integration not found" };
 
@@ -177,6 +180,7 @@ export async function importApolloLeadsAction(
 }
 
 export async function syncApolloAction(): Promise<{ success: boolean; imported: number; error?: string }> {
+  await verifyOwnerSession();
   const integ = await getIntegrationBySlug("apollo");
   if (!integ) return { success: false, imported: 0, error: "Apollo integration not found" };
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod/v4";
 import { createJob, updateJobStatus, addSystemLog } from "./queries";
+import { verifyOwnerSession } from "./dal";
 
 const JobSchema = z.object({
   name:      z.string().min(1, "Name required"),
@@ -15,6 +16,7 @@ export async function createJobAction(
   _prev: { error?: string; success?: boolean } | null,
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
+  await verifyOwnerSession();
   const parsed = JobSchema.safeParse({
     name:      formData.get("name"),
     source:    formData.get("source") || undefined,
@@ -40,6 +42,7 @@ export async function createJobAction(
 }
 
 export async function cancelJobAction(id: number): Promise<void> {
+  await verifyOwnerSession();
   await updateJobStatus(id, "Cancelled");
   await addSystemLog({
     eventType: "system",
@@ -52,6 +55,7 @@ export async function cancelJobAction(id: number): Promise<void> {
 }
 
 export async function retryJobAction(id: number): Promise<void> {
+  await verifyOwnerSession();
   await updateJobStatus(id, "Queued");
   await addSystemLog({
     eventType: "system",

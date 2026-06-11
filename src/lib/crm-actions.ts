@@ -8,6 +8,7 @@ import {
   createSyncHistory, completeSyncHistory,
   addSystemLog, createNotification,
 } from "./queries";
+import { verifyOwnerSession } from "./dal";
 
 type SyncResult = { success: boolean; synced: number; error?: string };
 
@@ -27,6 +28,7 @@ async function hubspotFetch(path: string, apiKey: string): Promise<Record<string
 }
 
 export async function syncHubSpotContactsAction(): Promise<SyncResult> {
+  await verifyOwnerSession();
   const integ = await getIntegrationBySlug("hubspot");
   if (!integ) return { success: false, synced: 0, error: "HubSpot integration not found" };
 
@@ -86,6 +88,7 @@ export async function syncHubSpotContactsAction(): Promise<SyncResult> {
 }
 
 export async function syncHubSpotDealsAction(): Promise<SyncResult> {
+  await verifyOwnerSession();
   const integ = await getIntegrationBySlug("hubspot");
   if (!integ) return { success: false, synced: 0, error: "HubSpot integration not found" };
 
@@ -157,6 +160,7 @@ async function pipedriveFetch(path: string, apiToken: string): Promise<Record<st
 }
 
 export async function syncPipedriveContactsAction(): Promise<SyncResult> {
+  await verifyOwnerSession();
   const integ = await getIntegrationBySlug("pipedrive");
   if (!integ) return { success: false, synced: 0, error: "Pipedrive integration not found" };
 
@@ -219,6 +223,7 @@ export async function syncPipedriveContactsAction(): Promise<SyncResult> {
 }
 
 export async function syncPipedriveDealsAction(): Promise<SyncResult> {
+  await verifyOwnerSession();
   const integ = await getIntegrationBySlug("pipedrive");
   if (!integ) return { success: false, synced: 0, error: "Pipedrive integration not found" };
 

@@ -10,6 +10,13 @@ import type {
   DbJob, DbSystemLog, DbQueueItem,
   DbEmailConfig, DbEmailLog, DbApolloLead, DbInstantlyCampaign,
   DbCrmContact, DbCrmDeal, DbSyncHistory,
+  DbAiJob, DbAiPrompt, DbLeadScore, DbReplyClassification,
+  DbResearchReport, DbAiInsight, DbAiUsage,
+  DbPlan, DbStripeCustomer, DbSubscription, DbRefund, DbBillingEvent,
+  DbPlanChange, DbBillingRenewal, DbBillingPayment,
+  DbAuditLog, DbErrorLog, DbHealthCheckResult,
+  DbSop, DbDocPage, DbTestCase, DbSupportTicket, DbOffboardingRecord, DbClientTemplate,
+  DbPaymentProvider,
 } from "./db-types";
 
 // Helper: Neon returns Record<string, any>[] — cast through unknown
@@ -1789,4 +1796,1048 @@ export async function getIntegrationBySlug(slug: string): Promise<DbIntegration 
     FROM integrations WHERE slug = ${slug} LIMIT 1
   `);
   return rows[0] ?? null;
+}
+
+// ─── Phase 9: AI Jobs ─────────────────────────────────────────────────────────
+
+export function getAiJobs(limit = 100): Promise<DbAiJob[]> {
+  return cast<DbAiJob>(sql`
+    SELECT id, job_id, task_type, status, subject_id, subject_type, subject_name,
+           result_id, result_type, error_message,
+           created_at::text AS created_at, completed_at::text AS completed_at
+    FROM ai_jobs ORDER BY created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function createAiJob(data: {
+  jobId?: number | null; taskType: string;
+  subjectId?: number | null; subjectType?: string | null; subjectName?: string | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO ai_jobs (job_id, task_type, status, subject_id, subject_type, subject_name)
+    VALUES (${data.jobId ?? null}, ${data.taskType}, 'Running',
+            ${data.subjectId ?? null}, ${data.subjectType ?? null}, ${data.subjectName ?? null})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+export async function completeAiJob(id: number, resultId?: number | null, resultType?: string | null): Promise<void> {
+  await sql`
+    UPDATE ai_jobs SET status = 'Completed', result_id = ${resultId ?? null},
+      result_type = ${resultType ?? null}, completed_at = NOW()
+    WHERE id = ${id}
+  `;
+}
+
+export async function failAiJob(id: number, errorMessage: string): Promise<void> {
+  await sql`
+    UPDATE ai_jobs SET status = 'Failed', error_message = ${errorMessage}, completed_at = NOW()
+    WHERE id = ${id}
+  `;
+}
+
+// ─── Phase 9: AI Prompts ──────────────────────────────────────────────────────
+
+export function getAiPrompts(): Promise<DbAiPrompt[]> {
+  return cast<DbAiPrompt>(sql`
+    SELECT id, name, category, description, prompt, is_active, is_default, version,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM ai_prompts ORDER BY is_default DESC, category ASC, name ASC
+  `);
+}
+
+export async function getAiPromptByCategory(category: string): Promise<DbAiPrompt | null> {
+  const rows = await cast<DbAiPrompt>(sql`
+    SELECT id, name, category, description, prompt, is_active, is_default, version,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM ai_prompts
+    WHERE category = ${category} AND is_active = TRUE
+    ORDER BY is_default DESC, updated_at DESC LIMIT 1
+  `);
+  return rows[0] ?? null;
+}
+
+export async function createAiPrompt(data: {
+  name: string; category: string; description?: string | null; prompt: string;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO ai_prompts (name, category, description, prompt)
+    VALUES (${data.name}, ${data.category}, ${data.description ?? null}, ${data.prompt})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+export async function updateAiPrompt(id: number, data: {
+  name?: string; description?: string | null; prompt?: string; isActive?: boolean;
+}): Promise<void> {
+  const ops: Promise<unknown>[] = [];
+  if (data.name      !== undefined) ops.push(sql`UPDATE ai_prompts SET name = ${data.name}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.description !== undefined) ops.push(sql`UPDATE ai_prompts SET description = ${data.description}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.prompt    !== undefined) ops.push(sql`UPDATE ai_prompts SET prompt = ${data.prompt}, version = version + 1, updated_at = NOW() WHERE id = ${id}`);
+  if (data.isActive  !== undefined) ops.push(sql`UPDATE ai_prompts SET is_active = ${data.isActive}, updated_at = NOW() WHERE id = ${id}`);
+  await Promise.all(ops);
+}
+
+export async function deleteAiPrompt(id: number): Promise<void> {
+  await sql`DELETE FROM ai_prompts WHERE id = ${id} AND is_default = FALSE`;
+}
+
+// ─── Phase 9: Lead Scores ─────────────────────────────────────────────────────
+
+export function getLeadScores(limit = 200): Promise<(DbLeadScore & { lead_name: string; lead_company: string | null })[]> {
+  return cast<DbLeadScore & { lead_name: string; lead_company: string | null }>(sql`
+    SELECT ls.id, ls.apollo_lead_id, al.name AS lead_name, al.company AS lead_company,
+           ls.score, ls.confidence, ls.reason, ls.model,
+           ls.tokens_input, ls.tokens_output,
+           ls.created_at::text AS created_at
+    FROM lead_scores ls
+    JOIN apollo_leads al ON al.id = ls.apollo_lead_id
+    ORDER BY ls.created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function getLeadScoreByLeadId(leadId: number): Promise<DbLeadScore | null> {
+  const rows = await cast<DbLeadScore>(sql`
+    SELECT id, apollo_lead_id, score, confidence, reason, model,
+           tokens_input, tokens_output, created_at::text AS created_at
+    FROM lead_scores WHERE apollo_lead_id = ${leadId}
+    ORDER BY created_at DESC LIMIT 1
+  `);
+  return rows[0] ?? null;
+}
+
+export async function createLeadScore(data: {
+  apolloLeadId: number; score: string; confidence?: number | null; reason?: string | null;
+  model?: string | null; tokensInput?: number | null; tokensOutput?: number | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO lead_scores (apollo_lead_id, score, confidence, reason, model, tokens_input, tokens_output)
+    VALUES (${data.apolloLeadId}, ${data.score}, ${data.confidence ?? null}, ${data.reason ?? null},
+            ${data.model ?? null}, ${data.tokensInput ?? null}, ${data.tokensOutput ?? null})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+export async function getUnscoredLeadCount(): Promise<number> {
+  const rows = await sql`
+    SELECT COUNT(*) AS cnt FROM apollo_leads al
+    WHERE NOT EXISTS (SELECT 1 FROM lead_scores ls WHERE ls.apollo_lead_id = al.id)
+  ` as unknown as any[];
+  return Number(rows[0].cnt ?? 0);
+}
+
+export async function getLeadScoreStats(): Promise<{ total: number; hot: number; warm: number; cold: number; disqualified: number; unscored: number }> {
+  const [scored, total] = await Promise.all([
+    sql`SELECT score, COUNT(*) AS cnt FROM lead_scores GROUP BY score` as Promise<any[]>,
+    sql`SELECT COUNT(*) AS cnt FROM apollo_leads` as unknown as Promise<any[]>,
+  ]);
+  const s = Object.fromEntries((scored as any[]).map(r => [r.score, Number(r.cnt)]));
+  const totalLeads = Number((total as any[])[0]?.cnt ?? 0);
+  const totalScored = (s["Hot"] ?? 0) + (s["Warm"] ?? 0) + (s["Cold"] ?? 0) + (s["Disqualified"] ?? 0);
+  return {
+    total:         totalLeads,
+    hot:           s["Hot"]          ?? 0,
+    warm:          s["Warm"]         ?? 0,
+    cold:          s["Cold"]         ?? 0,
+    disqualified:  s["Disqualified"] ?? 0,
+    unscored:      totalLeads - totalScored,
+  };
+}
+
+// ─── Phase 9: Research Reports ────────────────────────────────────────────────
+
+export function getResearchReports(limit = 50): Promise<DbResearchReport[]> {
+  return cast<DbResearchReport>(sql`
+    SELECT id, report_type, subject_name, subject_company, input_data, report_markdown,
+           model, tokens_input, tokens_output, client_id,
+           created_at::text AS created_at
+    FROM research_reports ORDER BY created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function createResearchReport(data: {
+  reportType: string; subjectName: string; subjectCompany?: string | null;
+  inputData?: string | null; reportMarkdown: string;
+  model?: string | null; tokensInput?: number | null; tokensOutput?: number | null;
+  clientId?: number | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO research_reports
+      (report_type, subject_name, subject_company, input_data, report_markdown,
+       model, tokens_input, tokens_output, client_id)
+    VALUES
+      (${data.reportType}, ${data.subjectName}, ${data.subjectCompany ?? null},
+       ${data.inputData ?? null}, ${data.reportMarkdown},
+       ${data.model ?? null}, ${data.tokensInput ?? null}, ${data.tokensOutput ?? null},
+       ${data.clientId ?? null})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+// ─── Phase 9: AI Insights ─────────────────────────────────────────────────────
+
+export function getAiInsights(insightType?: string, limit = 50): Promise<DbAiInsight[]> {
+  if (insightType) {
+    return cast<DbAiInsight>(sql`
+      SELECT id, insight_type, title, subject_id, subject_name, input_data, insight_markdown,
+             model, tokens_input, tokens_output, client_id,
+             created_at::text AS created_at
+      FROM ai_insights WHERE insight_type = ${insightType}
+      ORDER BY created_at DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbAiInsight>(sql`
+    SELECT id, insight_type, title, subject_id, subject_name, input_data, insight_markdown,
+           model, tokens_input, tokens_output, client_id,
+           created_at::text AS created_at
+    FROM ai_insights ORDER BY created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function createAiInsight(data: {
+  insightType: string; title: string; subjectId?: number | null; subjectName?: string | null;
+  inputData?: string | null; insightMarkdown: string;
+  model?: string | null; tokensInput?: number | null; tokensOutput?: number | null;
+  clientId?: number | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO ai_insights
+      (insight_type, title, subject_id, subject_name, input_data, insight_markdown,
+       model, tokens_input, tokens_output, client_id)
+    VALUES
+      (${data.insightType}, ${data.title}, ${data.subjectId ?? null}, ${data.subjectName ?? null},
+       ${data.inputData ?? null}, ${data.insightMarkdown},
+       ${data.model ?? null}, ${data.tokensInput ?? null}, ${data.tokensOutput ?? null},
+       ${data.clientId ?? null})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+// ─── Phase 9: Reply Classifications ──────────────────────────────────────────
+
+export function getReplyClassifications(campaignId?: string, limit = 200): Promise<DbReplyClassification[]> {
+  if (campaignId) {
+    return cast<DbReplyClassification>(sql`
+      SELECT id, campaign_id, reply_id, contact_name, contact_email, reply_text,
+             classification, confidence, reason, model, tokens_input, tokens_output,
+             created_at::text AS created_at
+      FROM reply_classifications WHERE campaign_id = ${campaignId}
+      ORDER BY created_at DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbReplyClassification>(sql`
+    SELECT id, campaign_id, reply_id, contact_name, contact_email, reply_text,
+           classification, confidence, reason, model, tokens_input, tokens_output,
+           created_at::text AS created_at
+    FROM reply_classifications ORDER BY created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function createReplyClassification(data: {
+  campaignId?: string | null; replyId?: string | null;
+  contactName?: string | null; contactEmail?: string | null; replyText?: string | null;
+  classification: string; confidence?: number | null; reason?: string | null;
+  model?: string | null; tokensInput?: number | null; tokensOutput?: number | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO reply_classifications
+      (campaign_id, reply_id, contact_name, contact_email, reply_text,
+       classification, confidence, reason, model, tokens_input, tokens_output)
+    VALUES
+      (${data.campaignId ?? null}, ${data.replyId ?? null},
+       ${data.contactName ?? null}, ${data.contactEmail ?? null}, ${data.replyText ?? null},
+       ${data.classification}, ${data.confidence ?? null}, ${data.reason ?? null},
+       ${data.model ?? null}, ${data.tokensInput ?? null}, ${data.tokensOutput ?? null})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+// ─── Phase 9: AI Usage ────────────────────────────────────────────────────────
+
+export async function createAiUsage(data: {
+  taskType: string; model: string; tokensInput: number; tokensOutput: number;
+  costUsd?: number | null; responseTimeMs?: number | null; clientId?: number | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO ai_usage (task_type, model, tokens_input, tokens_output, cost_usd, response_time_ms, client_id)
+    VALUES (${data.taskType}, ${data.model}, ${data.tokensInput}, ${data.tokensOutput},
+            ${data.costUsd ?? null}, ${data.responseTimeMs ?? null}, ${data.clientId ?? null})
+  `;
+}
+
+export async function getAiUsageTotals(): Promise<{
+  totalRequests: number; totalTokensIn: number; totalTokensOut: number;
+  totalCostUsd: number; avgResponseMs: number; todayRequests: number;
+}> {
+  const rows = await sql`
+    SELECT
+      COUNT(*) AS total_requests,
+      COALESCE(SUM(tokens_input), 0)       AS total_tokens_in,
+      COALESCE(SUM(tokens_output), 0)      AS total_tokens_out,
+      COALESCE(SUM(cost_usd), 0)           AS total_cost,
+      COALESCE(AVG(response_time_ms), 0)   AS avg_response_ms,
+      SUM(CASE WHEN created_at >= CURRENT_DATE THEN 1 ELSE 0 END) AS today_requests
+    FROM ai_usage
+  ` as unknown as any[];
+  const r = rows[0];
+  return {
+    totalRequests:   Number(r.total_requests  ?? 0),
+    totalTokensIn:   Number(r.total_tokens_in  ?? 0),
+    totalTokensOut:  Number(r.total_tokens_out ?? 0),
+    totalCostUsd:    Number(r.total_cost       ?? 0),
+    avgResponseMs:   Number(r.avg_response_ms  ?? 0),
+    todayRequests:   Number(r.today_requests   ?? 0),
+  };
+}
+
+// ─── Phase 10: Plans ──────────────────────────────────────────────────────────
+
+export function getPlans(activeOnly = false): Promise<DbPlan[]> {
+  if (activeOnly) {
+    return cast<DbPlan>(sql`
+      SELECT id, name, slug, tier, description,
+             price_monthly::float AS price_monthly,
+             price_annual::float  AS price_annual,
+             COALESCE(features, '{}') AS features,
+             billing_cycle, status, stripe_price_id, stripe_product_id,
+             created_at::text AS created_at, updated_at::text AS updated_at
+      FROM plans WHERE status = 'Active' ORDER BY price_monthly ASC
+    `);
+  }
+  return cast<DbPlan>(sql`
+    SELECT id, name, slug, tier, description,
+           price_monthly::float AS price_monthly,
+           price_annual::float  AS price_annual,
+           COALESCE(features, '{}') AS features,
+           billing_cycle, status, stripe_price_id, stripe_product_id,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM plans ORDER BY price_monthly ASC
+  `);
+}
+
+export async function getPlanBySlug(slug: string): Promise<DbPlan | null> {
+  const rows = await cast<DbPlan>(sql`
+    SELECT id, name, slug, tier, description,
+           price_monthly::float AS price_monthly,
+           price_annual::float  AS price_annual,
+           COALESCE(features, '{}') AS features,
+           billing_cycle, status, stripe_price_id, stripe_product_id,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM plans WHERE slug = ${slug} LIMIT 1
+  `);
+  return rows[0] ?? null;
+}
+
+export async function createPlan(data: {
+  name: string; slug: string; tier?: string | null; description?: string | null;
+  priceMonthly: number; priceAnnual?: number | null; features?: string[];
+  billingCycle?: string; stripePriceId?: string | null; stripeProductId?: string | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO plans (name, slug, tier, description, price_monthly, price_annual, features,
+                       billing_cycle, stripe_price_id, stripe_product_id)
+    VALUES (${data.name}, ${data.slug}, ${data.tier ?? null}, ${data.description ?? null},
+            ${data.priceMonthly}, ${data.priceAnnual ?? null},
+            ${data.features ?? []},
+            ${data.billingCycle ?? 'monthly'}, ${data.stripePriceId ?? null}, ${data.stripeProductId ?? null})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+export async function updatePlan(id: number, data: {
+  name?: string; description?: string | null; priceMonthly?: number;
+  priceAnnual?: number | null; features?: string[]; status?: string;
+  stripePriceId?: string | null; stripeProductId?: string | null;
+}): Promise<void> {
+  const ops: Promise<unknown>[] = [];
+  if (data.name         !== undefined) ops.push(sql`UPDATE plans SET name = ${data.name}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.description  !== undefined) ops.push(sql`UPDATE plans SET description = ${data.description}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.priceMonthly !== undefined) ops.push(sql`UPDATE plans SET price_monthly = ${data.priceMonthly}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.priceAnnual  !== undefined) ops.push(sql`UPDATE plans SET price_annual = ${data.priceAnnual}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.features     !== undefined) ops.push(sql`UPDATE plans SET features = ${data.features}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.status       !== undefined) ops.push(sql`UPDATE plans SET status = ${data.status}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.stripePriceId !== undefined) ops.push(sql`UPDATE plans SET stripe_price_id = ${data.stripePriceId}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.stripeProductId !== undefined) ops.push(sql`UPDATE plans SET stripe_product_id = ${data.stripeProductId}, updated_at = NOW() WHERE id = ${id}`);
+  await Promise.all(ops);
+}
+
+// ─── Phase 10: Stripe Customers ───────────────────────────────────────────────
+
+export async function getStripeCustomer(clientId: number): Promise<DbStripeCustomer | null> {
+  const rows = await cast<DbStripeCustomer>(sql`
+    SELECT id, client_id, stripe_customer_id, email, name,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM stripe_customers WHERE client_id = ${clientId} LIMIT 1
+  `);
+  return rows[0] ?? null;
+}
+
+export async function upsertStripeCustomer(data: {
+  clientId: number; stripeCustomerId: string; email?: string | null; name?: string | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO stripe_customers (client_id, stripe_customer_id, email, name)
+    VALUES (${data.clientId}, ${data.stripeCustomerId}, ${data.email ?? null}, ${data.name ?? null})
+    ON CONFLICT (stripe_customer_id) DO UPDATE SET
+      email = EXCLUDED.email, name = EXCLUDED.name, updated_at = NOW()
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+// ─── Phase 10: Subscriptions ──────────────────────────────────────────────────
+
+export function getSubscriptions(clientId?: number): Promise<DbSubscription[]> {
+  if (clientId) {
+    return cast<DbSubscription>(sql`
+      SELECT s.id, s.client_id, c.company_name AS client_name,
+             s.stripe_customer_id, s.stripe_subscription_id,
+             s.plan_id, s.plan_name, s.tier, s.status,
+             s.current_period_start::text AS current_period_start,
+             s.current_period_end::text AS current_period_end,
+             s.trial_end::text AS trial_end,
+             s.cancel_at::text AS cancel_at, s.cancelled_at::text AS cancelled_at,
+             s.mrr::float AS mrr, s.arr::float AS arr, s.notes,
+             s.created_at::text AS created_at, s.updated_at::text AS updated_at
+      FROM subscriptions s JOIN clients c ON c.id = s.client_id
+      WHERE s.client_id = ${clientId}
+      ORDER BY s.created_at DESC
+    `);
+  }
+  return cast<DbSubscription>(sql`
+    SELECT s.id, s.client_id, c.company_name AS client_name,
+           s.stripe_customer_id, s.stripe_subscription_id,
+           s.plan_id, s.plan_name, s.tier, s.status,
+           s.current_period_start::text AS current_period_start,
+           s.current_period_end::text AS current_period_end,
+           s.trial_end::text AS trial_end,
+           s.cancel_at::text AS cancel_at, s.cancelled_at::text AS cancelled_at,
+           s.mrr::float AS mrr, s.arr::float AS arr, s.notes,
+           s.created_at::text AS created_at, s.updated_at::text AS updated_at
+    FROM subscriptions s JOIN clients c ON c.id = s.client_id
+    ORDER BY s.created_at DESC
+  `);
+}
+
+export async function getActiveSubscription(clientId: number): Promise<DbSubscription | null> {
+  const rows = await cast<DbSubscription>(sql`
+    SELECT s.id, s.client_id, c.company_name AS client_name,
+           s.stripe_customer_id, s.stripe_subscription_id,
+           s.plan_id, s.plan_name, s.tier, s.status,
+           s.current_period_start::text AS current_period_start,
+           s.current_period_end::text AS current_period_end,
+           s.trial_end::text AS trial_end,
+           s.cancel_at::text AS cancel_at, s.cancelled_at::text AS cancelled_at,
+           s.mrr::float AS mrr, s.arr::float AS arr, s.notes,
+           s.created_at::text AS created_at, s.updated_at::text AS updated_at
+    FROM subscriptions s JOIN clients c ON c.id = s.client_id
+    WHERE s.client_id = ${clientId} AND s.status IN ('Active','Trial','Past Due')
+    ORDER BY s.created_at DESC LIMIT 1
+  `);
+  return rows[0] ?? null;
+}
+
+export async function createSubscription(data: {
+  clientId: number; planId?: number | null; planName?: string | null; tier?: string | null;
+  status?: string; mrr?: number | null; arr?: number | null; notes?: string | null;
+  currentPeriodStart?: string | null; currentPeriodEnd?: string | null;
+  stripeSubscriptionId?: string | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO subscriptions
+      (client_id, plan_id, plan_name, tier, status, mrr, arr, notes,
+       current_period_start, current_period_end, stripe_subscription_id)
+    VALUES
+      (${data.clientId}, ${data.planId ?? null}, ${data.planName ?? null},
+       ${data.tier ?? null}, ${data.status ?? 'Active'},
+       ${data.mrr ?? null}, ${data.arr ?? null}, ${data.notes ?? null},
+       ${data.currentPeriodStart ?? null}, ${data.currentPeriodEnd ?? null},
+       ${data.stripeSubscriptionId ?? null})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+export async function updateSubscription(id: number, data: {
+  status?: string; planId?: number | null; planName?: string | null;
+  tier?: string | null; mrr?: number | null; arr?: number | null;
+  currentPeriodStart?: string | null; currentPeriodEnd?: string | null;
+  cancelledAt?: string | null; notes?: string | null;
+}): Promise<void> {
+  const ops: Promise<unknown>[] = [];
+  if (data.status             !== undefined) ops.push(sql`UPDATE subscriptions SET status = ${data.status}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.planId             !== undefined) ops.push(sql`UPDATE subscriptions SET plan_id = ${data.planId}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.planName           !== undefined) ops.push(sql`UPDATE subscriptions SET plan_name = ${data.planName}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.tier               !== undefined) ops.push(sql`UPDATE subscriptions SET tier = ${data.tier}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.mrr                !== undefined) ops.push(sql`UPDATE subscriptions SET mrr = ${data.mrr}, arr = ${(data.mrr ?? 0) * 12}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.currentPeriodEnd   !== undefined) ops.push(sql`UPDATE subscriptions SET current_period_end = ${data.currentPeriodEnd}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.cancelledAt        !== undefined) ops.push(sql`UPDATE subscriptions SET cancelled_at = ${data.cancelledAt}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.notes              !== undefined) ops.push(sql`UPDATE subscriptions SET notes = ${data.notes}, updated_at = NOW() WHERE id = ${id}`);
+  await Promise.all(ops);
+}
+
+export async function getUpcomingRenewals(days = 30): Promise<DbSubscription[]> {
+  return cast<DbSubscription>(sql`
+    SELECT s.id, s.client_id, c.company_name AS client_name,
+           s.stripe_customer_id, s.stripe_subscription_id,
+           s.plan_id, s.plan_name, s.tier, s.status,
+           s.current_period_start::text AS current_period_start,
+           s.current_period_end::text AS current_period_end,
+           s.trial_end::text AS trial_end,
+           s.cancel_at::text AS cancel_at, s.cancelled_at::text AS cancelled_at,
+           s.mrr::float AS mrr, s.arr::float AS arr, s.notes,
+           s.created_at::text AS created_at, s.updated_at::text AS updated_at
+    FROM subscriptions s JOIN clients c ON c.id = s.client_id
+    WHERE s.status IN ('Active','Trial')
+      AND s.current_period_end IS NOT NULL
+      AND s.current_period_end <= NOW() + (${days} || ' days')::INTERVAL
+    ORDER BY s.current_period_end ASC
+  `);
+}
+
+// ─── Phase 10: Billing Payments (extended) ────────────────────────────────────
+
+export function getBillingPayments(clientId?: number, limit = 100): Promise<DbBillingPayment[]> {
+  if (clientId) {
+    return cast<DbBillingPayment>(sql`
+      SELECT p.id, p.invoice_id, inv.invoice_number,
+             p.client_id, c.company_name AS client_name,
+             p.amount::float AS amount,
+             to_char(p.payment_date, 'Mon DD, YYYY') AS payment_date,
+             p.method, p.reference, p.notes,
+             COALESCE(p.stripe_payment_intent_id, NULL) AS stripe_payment_intent_id,
+             COALESCE(p.stripe_charge_id, NULL)         AS stripe_charge_id,
+             COALESCE(p.currency, 'usd')                AS currency,
+             COALESCE(p.billing_status, 'Paid')         AS billing_status,
+             p.created_at::text AS created_at
+      FROM payments p
+      LEFT JOIN invoices inv ON inv.id = p.invoice_id
+      LEFT JOIN clients c ON c.id = p.client_id
+      WHERE p.client_id = ${clientId}
+      ORDER BY p.payment_date DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbBillingPayment>(sql`
+    SELECT p.id, p.invoice_id, inv.invoice_number,
+           p.client_id, c.company_name AS client_name,
+           p.amount::float AS amount,
+           to_char(p.payment_date, 'Mon DD, YYYY') AS payment_date,
+           p.method, p.reference, p.notes,
+           COALESCE(p.stripe_payment_intent_id, NULL) AS stripe_payment_intent_id,
+           COALESCE(p.stripe_charge_id, NULL)         AS stripe_charge_id,
+           COALESCE(p.currency, 'usd')                AS currency,
+           COALESCE(p.billing_status, 'Paid')         AS billing_status,
+           p.created_at::text AS created_at
+    FROM payments p
+    LEFT JOIN invoices inv ON inv.id = p.invoice_id
+    LEFT JOIN clients c ON c.id = p.client_id
+    ORDER BY p.payment_date DESC LIMIT ${limit}
+  `);
+}
+
+export async function createBillingPayment(data: {
+  clientId?: number | null; invoiceId?: number | null;
+  amount: number; method: string; paymentDate: string;
+  reference?: string | null; notes?: string | null;
+  stripePaymentIntentId?: string | null; stripeChargeId?: string | null;
+  currency?: string; billingStatus?: string;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO payments
+      (client_id, invoice_id, amount, method, payment_date, reference, notes,
+       stripe_payment_intent_id, stripe_charge_id, currency, billing_status)
+    VALUES
+      (${data.clientId ?? null}, ${data.invoiceId ?? null},
+       ${data.amount}, ${data.method}, ${data.paymentDate},
+       ${data.reference ?? null}, ${data.notes ?? null},
+       ${data.stripePaymentIntentId ?? null}, ${data.stripeChargeId ?? null},
+       ${data.currency ?? 'usd'}, ${data.billingStatus ?? 'Paid'})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+// ─── Phase 10: Refunds ────────────────────────────────────────────────────────
+
+export function getRefunds(clientId?: number, limit = 100): Promise<DbRefund[]> {
+  if (clientId) {
+    return cast<DbRefund>(sql`
+      SELECT r.id, r.payment_id, r.client_id, c.company_name AS client_name,
+             r.stripe_refund_id, r.amount::float AS amount, r.currency,
+             r.reason, r.status, r.processed_by, r.notes,
+             r.created_at::text AS created_at
+      FROM refunds r
+      LEFT JOIN clients c ON c.id = r.client_id
+      WHERE r.client_id = ${clientId}
+      ORDER BY r.created_at DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbRefund>(sql`
+    SELECT r.id, r.payment_id, r.client_id, c.company_name AS client_name,
+           r.stripe_refund_id, r.amount::float AS amount, r.currency,
+           r.reason, r.status, r.processed_by, r.notes,
+           r.created_at::text AS created_at
+    FROM refunds r
+    LEFT JOIN clients c ON c.id = r.client_id
+    ORDER BY r.created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function createRefund(data: {
+  paymentId?: number | null; clientId?: number | null; amount: number;
+  currency?: string; reason?: string | null; processedBy?: string | null; notes?: string | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO refunds (payment_id, client_id, amount, currency, reason, processed_by, notes)
+    VALUES (${data.paymentId ?? null}, ${data.clientId ?? null}, ${data.amount},
+            ${data.currency ?? 'usd'}, ${data.reason ?? null},
+            ${data.processedBy ?? null}, ${data.notes ?? null})
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0];
+}
+
+export async function updateRefundStatus(id: number, status: string, stripeRefundId?: string | null): Promise<void> {
+  await sql`
+    UPDATE refunds SET status = ${status},
+      stripe_refund_id = COALESCE(${stripeRefundId ?? null}, stripe_refund_id)
+    WHERE id = ${id}
+  `;
+}
+
+// ─── Phase 10: Billing Events ─────────────────────────────────────────────────
+
+export function getBillingEvents(limit = 50): Promise<DbBillingEvent[]> {
+  return cast<DbBillingEvent>(sql`
+    SELECT id, stripe_event_id, event_type, payload, processed, error_message,
+           created_at::text AS created_at
+    FROM billing_events ORDER BY created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function createBillingEvent(data: {
+  stripeEventId?: string | null; eventType: string; payload?: string | null;
+}): Promise<{ id: number }> {
+  const rows = await sql`
+    INSERT INTO billing_events (stripe_event_id, event_type, payload)
+    VALUES (${data.stripeEventId ?? null}, ${data.eventType}, ${data.payload ?? null})
+    ON CONFLICT (stripe_event_id) DO NOTHING
+    RETURNING id
+  ` as unknown as { id: number }[];
+  return rows[0] ?? { id: 0 };
+}
+
+export async function markBillingEventProcessed(id: number, errorMessage?: string | null): Promise<void> {
+  await sql`
+    UPDATE billing_events SET processed = TRUE, error_message = ${errorMessage ?? null}
+    WHERE id = ${id}
+  `;
+}
+
+// ─── Phase 10: Plan Changes ───────────────────────────────────────────────────
+
+export function getPlanChanges(clientId?: number, limit = 50): Promise<DbPlanChange[]> {
+  if (clientId) {
+    return cast<DbPlanChange>(sql`
+      SELECT pc.id, pc.client_id, c.company_name AS client_name,
+             pc.subscription_id, pc.from_plan_id, pc.to_plan_id,
+             pc.from_tier, pc.to_tier, pc.change_type,
+             to_char(pc.effective_date, 'Mon DD, YYYY') AS effective_date,
+             pc.reason, pc.revenue_impact::float AS revenue_impact, pc.created_by,
+             pc.created_at::text AS created_at
+      FROM plan_changes pc JOIN clients c ON c.id = pc.client_id
+      WHERE pc.client_id = ${clientId}
+      ORDER BY pc.created_at DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbPlanChange>(sql`
+    SELECT pc.id, pc.client_id, c.company_name AS client_name,
+           pc.subscription_id, pc.from_plan_id, pc.to_plan_id,
+           pc.from_tier, pc.to_tier, pc.change_type,
+           to_char(pc.effective_date, 'Mon DD, YYYY') AS effective_date,
+           pc.reason, pc.revenue_impact::float AS revenue_impact, pc.created_by,
+           pc.created_at::text AS created_at
+    FROM plan_changes pc JOIN clients c ON c.id = pc.client_id
+    ORDER BY pc.created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function createPlanChange(data: {
+  clientId: number; subscriptionId?: number | null;
+  fromPlanId?: number | null; toPlanId?: number | null;
+  fromTier?: string | null; toTier?: string | null;
+  changeType?: string; effectiveDate?: string | null;
+  reason?: string | null; revenueImpact?: number | null; createdBy?: string | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO plan_changes
+      (client_id, subscription_id, from_plan_id, to_plan_id, from_tier, to_tier,
+       change_type, effective_date, reason, revenue_impact, created_by)
+    VALUES
+      (${data.clientId}, ${data.subscriptionId ?? null},
+       ${data.fromPlanId ?? null}, ${data.toPlanId ?? null},
+       ${data.fromTier ?? null}, ${data.toTier ?? null},
+       ${data.changeType ?? 'upgrade'}, ${data.effectiveDate ?? null},
+       ${data.reason ?? null}, ${data.revenueImpact ?? null}, ${data.createdBy ?? null})
+  `;
+}
+
+// ─── Phase 10: Billing Renewal History ───────────────────────────────────────
+
+export function getBillingRenewalHistory(clientId?: number, limit = 50): Promise<DbBillingRenewal[]> {
+  if (clientId) {
+    return cast<DbBillingRenewal>(sql`
+      SELECT brh.id, brh.client_id, c.company_name AS client_name,
+             brh.subscription_id,
+             to_char(brh.renewal_date, 'Mon DD, YYYY') AS renewal_date,
+             brh.status, brh.amount::float AS amount, brh.stripe_invoice_id, brh.notes,
+             brh.created_at::text AS created_at
+      FROM billing_renewal_history brh JOIN clients c ON c.id = brh.client_id
+      WHERE brh.client_id = ${clientId}
+      ORDER BY brh.renewal_date DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbBillingRenewal>(sql`
+    SELECT brh.id, brh.client_id, c.company_name AS client_name,
+           brh.subscription_id,
+           to_char(brh.renewal_date, 'Mon DD, YYYY') AS renewal_date,
+           brh.status, brh.amount::float AS amount, brh.stripe_invoice_id, brh.notes,
+           brh.created_at::text AS created_at
+    FROM billing_renewal_history brh JOIN clients c ON c.id = brh.client_id
+    ORDER BY brh.renewal_date DESC LIMIT ${limit}
+  `);
+}
+
+export async function createBillingRenewal(data: {
+  clientId: number; subscriptionId?: number | null; renewalDate: string;
+  status?: string; amount?: number | null; stripeInvoiceId?: string | null; notes?: string | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO billing_renewal_history
+      (client_id, subscription_id, renewal_date, status, amount, stripe_invoice_id, notes)
+    VALUES
+      (${data.clientId}, ${data.subscriptionId ?? null}, ${data.renewalDate},
+       ${data.status ?? 'Renewed'}, ${data.amount ?? null},
+       ${data.stripeInvoiceId ?? null}, ${data.notes ?? null})
+  `;
+}
+
+// ─── Phase 10: Billing Metrics ────────────────────────────────────────────────
+
+export async function getBillingMetrics(): Promise<{
+  mrr: number; arr: number; activeSubscriptions: number;
+  trialSubscriptions: number; pastDue: number; cancelled: number;
+  upcomingRenewals30d: number; failedPayments: number;
+  totalRevenue: number; revenueByTier: Record<string, number>;
+}> {
+  const [subStats, payStats, tierStats] = await Promise.all([
+    sql`
+      SELECT
+        SUM(CASE WHEN status = 'Active' THEN mrr ELSE 0 END)    AS mrr,
+        COUNT(CASE WHEN status = 'Active' THEN 1 END)           AS active,
+        COUNT(CASE WHEN status = 'Trial' THEN 1 END)            AS trial,
+        COUNT(CASE WHEN status = 'Past Due' THEN 1 END)         AS past_due,
+        COUNT(CASE WHEN status IN ('Cancelled','Expired') THEN 1 END) AS cancelled,
+        COUNT(CASE WHEN status IN ('Active','Trial') AND current_period_end <= NOW() + INTERVAL '30 days' THEN 1 END) AS renewing_soon
+      FROM subscriptions
+    ` as Promise<any[]>,
+    sql`
+      SELECT
+        COALESCE(SUM(CASE WHEN COALESCE(billing_status,'Paid') = 'Paid' THEN amount ELSE 0 END), 0) AS total_revenue,
+        COUNT(CASE WHEN COALESCE(billing_status,'Paid') = 'Failed' THEN 1 END)                       AS failed
+      FROM payments
+    ` as Promise<any[]>,
+    sql`
+      SELECT tier, COALESCE(SUM(mrr), 0) AS tier_mrr
+      FROM subscriptions WHERE status = 'Active' AND tier IS NOT NULL
+      GROUP BY tier
+    ` as Promise<any[]>,
+  ]);
+  const s = (subStats as any[])[0];
+  const p = (payStats as any[])[0];
+  const mrr = Number(s?.mrr ?? 0);
+  const revenueByTier = Object.fromEntries((tierStats as any[]).map(r => [r.tier, Number(r.tier_mrr ?? 0)]));
+  return {
+    mrr,
+    arr:                   mrr * 12,
+    activeSubscriptions:   Number(s?.active       ?? 0),
+    trialSubscriptions:    Number(s?.trial        ?? 0),
+    pastDue:               Number(s?.past_due     ?? 0),
+    cancelled:             Number(s?.cancelled    ?? 0),
+    upcomingRenewals30d:   Number(s?.renewing_soon ?? 0),
+    failedPayments:        Number(p?.failed        ?? 0),
+    totalRevenue:          Number(p?.total_revenue ?? 0),
+    revenueByTier,
+  };
+}
+
+// ─── Phase 11: Audit Logs ─────────────────────────────────────────────────────
+
+export async function createAuditLog(data: {
+  action: string;
+  actorId?: number | null;
+  actorEmail?: string | null;
+  actorRole?: string | null;
+  targetType?: string | null;
+  targetId?: number | null;
+  details?: Record<string, unknown> | null;
+  ipAddress?: string | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO audit_logs (action, actor_id, actor_email, actor_role, target_type, target_id, details, ip_address)
+    VALUES (${data.action}, ${data.actorId ?? null}, ${data.actorEmail ?? null}, ${data.actorRole ?? null},
+            ${data.targetType ?? null}, ${data.targetId ?? null},
+            ${data.details ? JSON.stringify(data.details) : null}::jsonb,
+            ${data.ipAddress ?? null})
+  `;
+}
+
+export function getAuditLogs(limit = 100, action?: string): Promise<DbAuditLog[]> {
+  if (action) {
+    return cast<DbAuditLog>(sql`
+      SELECT id, action, actor_id, actor_email, actor_role, target_type, target_id,
+             details, ip_address, created_at::text AS created_at
+      FROM audit_logs WHERE action = ${action}
+      ORDER BY created_at DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbAuditLog>(sql`
+    SELECT id, action, actor_id, actor_email, actor_role, target_type, target_id,
+           details, ip_address, created_at::text AS created_at
+    FROM audit_logs ORDER BY created_at DESC LIMIT ${limit}
+  `);
+}
+
+// ─── Phase 11: Error Logs ─────────────────────────────────────────────────────
+
+export async function createErrorLog(data: {
+  errorType: string;
+  message: string;
+  stack?: string | null;
+  context?: Record<string, unknown> | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO error_logs (error_type, message, stack, context)
+    VALUES (${data.errorType}, ${data.message}, ${data.stack ?? null},
+            ${data.context ? JSON.stringify(data.context) : null}::jsonb)
+  `;
+}
+
+export function getErrorLogs(limit = 50, unresolvedOnly = false): Promise<DbErrorLog[]> {
+  if (unresolvedOnly) {
+    return cast<DbErrorLog>(sql`
+      SELECT id, error_type, message, stack, context, resolved,
+             resolved_at::text AS resolved_at, created_at::text AS created_at
+      FROM error_logs WHERE resolved = FALSE
+      ORDER BY created_at DESC LIMIT ${limit}
+    `);
+  }
+  return cast<DbErrorLog>(sql`
+    SELECT id, error_type, message, stack, context, resolved,
+           resolved_at::text AS resolved_at, created_at::text AS created_at
+    FROM error_logs ORDER BY created_at DESC LIMIT ${limit}
+  `);
+}
+
+export async function resolveErrorLog(id: number): Promise<void> {
+  await sql`UPDATE error_logs SET resolved = TRUE, resolved_at = NOW() WHERE id = ${id}`;
+}
+
+// ─── Phase 11: Health Checks ──────────────────────────────────────────────────
+
+export async function createHealthCheckResult(data: {
+  service: string;
+  status: string;
+  message?: string | null;
+  responseTimeMs?: number | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO health_check_results (service, status, message, response_time_ms)
+    VALUES (${data.service}, ${data.status}, ${data.message ?? null}, ${data.responseTimeMs ?? null})
+  `;
+}
+
+export async function getLatestHealthChecks(): Promise<DbHealthCheckResult[]> {
+  return cast<DbHealthCheckResult>(sql`
+    SELECT DISTINCT ON (service) id, service, status, message,
+           response_time_ms, checked_at::text AS checked_at
+    FROM health_check_results
+    ORDER BY service, checked_at DESC
+  `);
+}
+
+export function getHealthCheckHistory(service: string, limit = 24): Promise<DbHealthCheckResult[]> {
+  return cast<DbHealthCheckResult>(sql`
+    SELECT id, service, status, message, response_time_ms, checked_at::text AS checked_at
+    FROM health_check_results WHERE service = ${service}
+    ORDER BY checked_at DESC LIMIT ${limit}
+  `);
+}
+
+// ─── Phase 12: SOPs ───────────────────────────────────────────────────────────
+
+export function getSops(includeArchived = false): Promise<DbSop[]> {
+  if (includeArchived) {
+    return cast<DbSop>(sql`
+      SELECT id, title, category, content, status, version, created_by,
+             created_at::text AS created_at, updated_at::text AS updated_at
+      FROM sops ORDER BY category ASC, title ASC
+    `);
+  }
+  return cast<DbSop>(sql`
+    SELECT id, title, category, content, status, version, created_by,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM sops WHERE status = 'Active' ORDER BY category ASC, title ASC
+  `);
+}
+
+export async function getSopById(id: number): Promise<DbSop | null> {
+  const rows = await cast<DbSop>(sql`
+    SELECT id, title, category, content, status, version, created_by,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM sops WHERE id = ${id}
+  `);
+  return rows[0] ?? null;
+}
+
+// ─── Phase 12: Docs ───────────────────────────────────────────────────────────
+
+export function getDocs(includeArchived = false): Promise<DbDocPage[]> {
+  if (includeArchived) {
+    return cast<DbDocPage>(sql`
+      SELECT id, title, category, content, status, created_by,
+             created_at::text AS created_at, updated_at::text AS updated_at
+      FROM docs_pages ORDER BY category ASC, title ASC
+    `);
+  }
+  return cast<DbDocPage>(sql`
+    SELECT id, title, category, content, status, created_by,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM docs_pages WHERE status = 'Active' ORDER BY category ASC, title ASC
+  `);
+}
+
+export async function getDocById(id: number): Promise<DbDocPage | null> {
+  const rows = await cast<DbDocPage>(sql`
+    SELECT id, title, category, content, status, created_by,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM docs_pages WHERE id = ${id}
+  `);
+  return rows[0] ?? null;
+}
+
+// ─── Phase 12: Test Cases ─────────────────────────────────────────────────────
+
+export function getTestCases(): Promise<DbTestCase[]> {
+  return cast<DbTestCase>(sql`
+    SELECT id, feature, description, category, status, owner, notes,
+           last_tested_at::text AS last_tested_at,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM test_cases ORDER BY category ASC, feature ASC
+  `);
+}
+
+// ─── Phase 12: Support Tickets ────────────────────────────────────────────────
+
+export function getSupportTickets(statusFilter?: string): Promise<DbSupportTicket[]> {
+  if (statusFilter) {
+    return cast<DbSupportTicket>(sql`
+      SELECT t.id, t.title, t.description, t.status, t.priority,
+             t.client_id, c.company_name AS client_name,
+             t.assigned_to, t.resolution_notes,
+             t.resolved_at::text AS resolved_at,
+             t.created_at::text AS created_at, t.updated_at::text AS updated_at
+      FROM support_tickets t
+      LEFT JOIN clients c ON c.id = t.client_id
+      WHERE t.status = ${statusFilter}
+      ORDER BY
+        CASE t.priority WHEN 'Critical' THEN 1 WHEN 'High' THEN 2 WHEN 'Medium' THEN 3 ELSE 4 END,
+        t.created_at DESC
+    `);
+  }
+  return cast<DbSupportTicket>(sql`
+    SELECT t.id, t.title, t.description, t.status, t.priority,
+           t.client_id, c.company_name AS client_name,
+           t.assigned_to, t.resolution_notes,
+           t.resolved_at::text AS resolved_at,
+           t.created_at::text AS created_at, t.updated_at::text AS updated_at
+    FROM support_tickets t
+    LEFT JOIN clients c ON c.id = t.client_id
+    ORDER BY
+      CASE t.status WHEN 'Open' THEN 1 WHEN 'In Progress' THEN 2 ELSE 3 END,
+      CASE t.priority WHEN 'Critical' THEN 1 WHEN 'High' THEN 2 WHEN 'Medium' THEN 3 ELSE 4 END,
+      t.created_at DESC
+  `);
+}
+
+// ─── Phase 12: Offboarding ────────────────────────────────────────────────────
+
+export function getOffboardingRecords(): Promise<DbOffboardingRecord[]> {
+  return cast<DbOffboardingRecord>(sql`
+    SELECT id, client_id, client_name, reason,
+           offboarding_date::text AS offboarding_date,
+           data_exported, access_disabled, archived, notes, created_by,
+           created_at::text AS created_at
+    FROM offboarding_records ORDER BY created_at DESC
+  `);
+}
+
+export async function createOffboardingRecord(data: {
+  clientId: number; clientName?: string | null; reason?: string | null;
+  offboardingDate?: string | null; createdBy?: string | null;
+}): Promise<void> {
+  await sql`
+    INSERT INTO offboarding_records (client_id, client_name, reason, offboarding_date, created_by)
+    VALUES (${data.clientId}, ${data.clientName ?? null}, ${data.reason ?? null},
+            ${data.offboardingDate ?? null}, ${data.createdBy ?? null})
+  `;
+}
+
+// ─── Phase 12: Client Templates ───────────────────────────────────────────────
+
+export function getClientTemplates(): Promise<DbClientTemplate[]> {
+  return cast<DbClientTemplate>(sql`
+    SELECT id, name, tier, description, default_status,
+           COALESCE(features, '{}') AS features, is_default,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM client_templates ORDER BY
+      CASE tier WHEN 'Silver' THEN 1 WHEN 'Gold' THEN 2 WHEN 'Platinum' THEN 3 ELSE 4 END
+  `);
+}
+
+// ─── Phase 13: Payment Providers ─────────────────────────────────────────────
+
+export function getPaymentProviders(): Promise<DbPaymentProvider[]> {
+  return cast<DbPaymentProvider>(sql`
+    SELECT id, name, display_name, status, enabled, sandbox_mode,
+           api_configured, is_default,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM payment_providers ORDER BY id
+  `);
+}
+
+export async function getDefaultProvider(): Promise<DbPaymentProvider | null> {
+  const rows = await cast<DbPaymentProvider>(sql`
+    SELECT id, name, display_name, status, enabled, sandbox_mode,
+           api_configured, is_default,
+           created_at::text AS created_at, updated_at::text AS updated_at
+    FROM payment_providers WHERE is_default = true AND enabled = true LIMIT 1
+  `);
+  return rows[0] ?? null;
+}
+
+export async function setDefaultProvider(name: string): Promise<void> {
+  await sql`UPDATE payment_providers SET is_default = false, updated_at = NOW()`;
+  await sql`UPDATE payment_providers SET is_default = true,  updated_at = NOW() WHERE name = ${name}`;
+}
+
+export async function toggleProviderEnabled(id: number, enabled: boolean): Promise<void> {
+  await sql`UPDATE payment_providers SET enabled = ${enabled}, updated_at = NOW() WHERE id = ${id}`;
 }

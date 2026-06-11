@@ -8,6 +8,7 @@ import {
   createSyncHistory, completeSyncHistory,
   addSystemLog, createNotification,
 } from "./queries";
+import { verifyOwnerSession } from "./dal";
 
 export type InstantlySyncResult = {
   success: boolean;
@@ -17,6 +18,7 @@ export type InstantlySyncResult = {
 };
 
 export async function syncInstantlyCampaignsAction(): Promise<InstantlySyncResult> {
+  await verifyOwnerSession();
   const integ = await getIntegrationBySlug("instantly");
   if (!integ) return { success: false, synced: 0, error: "Instantly integration not found" };
 

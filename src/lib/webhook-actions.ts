@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod/v4";
 import { createWebhook, updateWebhookStatus, deleteWebhook, recordWebhookTrigger, addSystemLog } from "./queries";
+import { verifyOwnerSession } from "./dal";
 
 const WebhookSchema = z.object({
   name:     z.string().min(1, "Name required"),
@@ -15,6 +16,7 @@ export async function createWebhookAction(
   _prev: { error?: string; success?: boolean; webhookId?: number } | null,
   formData: FormData
 ): Promise<{ error?: string; success?: boolean; webhookId?: number }> {
+  await verifyOwnerSession();
   const parsed = WebhookSchema.safeParse({
     name:     formData.get("name"),
     source:   formData.get("source"),
@@ -40,6 +42,7 @@ export async function createWebhookAction(
 }
 
 export async function toggleWebhookAction(id: number, status: string): Promise<void> {
+  await verifyOwnerSession();
   await updateWebhookStatus(id, status);
   await addSystemLog({
     eventType: "webhook",
@@ -52,6 +55,7 @@ export async function toggleWebhookAction(id: number, status: string): Promise<v
 }
 
 export async function deleteWebhookAction(id: number): Promise<void> {
+  await verifyOwnerSession();
   await deleteWebhook(id);
   await addSystemLog({
     eventType: "webhook",
@@ -63,6 +67,7 @@ export async function deleteWebhookAction(id: number): Promise<void> {
 }
 
 export async function testWebhookAction(id: number): Promise<{ success: boolean; message: string }> {
+  await verifyOwnerSession();
   try {
     await recordWebhookTrigger(id, true, 128, 200, null);
     await addSystemLog({

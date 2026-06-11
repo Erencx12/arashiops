@@ -8,6 +8,7 @@ import {
   createSyncHistory, completeSyncHistory,
   addSystemLog, createNotification,
 } from "./queries";
+import { verifyOwnerSession } from "./dal";
 
 type TriggerResult = { success: boolean; error?: string; statusCode?: number };
 
@@ -34,6 +35,7 @@ export async function triggerMakeScenarioAction(
   webhookId: number,
   eventData?: Record<string, unknown>
 ): Promise<TriggerResult> {
+  await verifyOwnerSession();
   const integ = await getIntegrationBySlug("make");
   if (!integ) return { success: false, error: "Make.com integration not found" };
 
@@ -96,6 +98,7 @@ export async function triggerN8nWorkflowAction(
   webhookId: number,
   eventData?: Record<string, unknown>
 ): Promise<TriggerResult> {
+  await verifyOwnerSession();
   const integ = await getIntegrationBySlug("n8n");
   if (!integ) return { success: false, error: "n8n integration not found" };
 

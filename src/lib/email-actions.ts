@@ -7,6 +7,7 @@ import {
   addSystemLog, createNotification, getIntegrationBySlug, updateIntegrationHealth,
 } from "./queries";
 import { testEmailConnection } from "./email";
+import { verifyOwnerSession } from "./dal";
 
 const EmailConfigSchema = z.object({
   provider:    z.string().min(1, "Provider required"),
@@ -22,6 +23,7 @@ export async function saveEmailConfigAction(
   _prev: { error?: string; success?: boolean } | null,
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
+  await verifyOwnerSession();
   const parsed = EmailConfigSchema.safeParse({
     provider:   formData.get("provider"),
     smtpHost:   formData.get("smtpHost") || undefined,
@@ -64,6 +66,7 @@ export async function sendTestEmailAction(
   _prev: { error?: string; success?: boolean; message?: string } | null,
   formData: FormData
 ): Promise<{ error?: string; success?: boolean; message?: string }> {
+  await verifyOwnerSession();
   const configId = Number(formData.get("configId"));
   const recipient = String(formData.get("recipient") ?? "");
   if (!recipient || !recipient.includes("@")) return { error: "Valid recipient email required" };
@@ -101,6 +104,7 @@ export async function sendTestEmailAction(
 export async function sendEmailFromAdmin(
   recipient: string, subject: string, html: string, template: string
 ): Promise<{ success: boolean; error?: string }> {
+  await verifyOwnerSession();
   const { sendEmail } = await import("./email");
   const result = await sendEmail({ to: recipient, subject, html, template });
   if (!result.success) {

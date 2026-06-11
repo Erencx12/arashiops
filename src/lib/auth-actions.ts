@@ -7,6 +7,8 @@ import crypto from "crypto";
 import { sql } from "./db";
 import { createSession, deleteSession } from "./session";
 import { verifySession } from "./dal";
+import { checkRateLimit, LIMITS } from "./rate-limit";
+import { writeAuditLog } from "./audit";
 import {
   getUserByEmail,
   getUserById,
@@ -57,6 +59,10 @@ export async function loginAction(
 
     const { email, password, rememberMe } = parsed.data;
 
+    // Rate-limit by email address (IP would require headers() in middleware)
+    const rl = checkRateLimit("login", email.toLowerCase(), LIMITS.login);
+    if (!rl.allowed) return { error: rl.message };
+
     const user = await getUserByEmail(email);
     if (!user || user.status === "suspended") {
       return { error: "Invalid email or password." };
@@ -68,6 +74,7 @@ export async function loginAction(
 
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
+      void writeAuditLog({ action: "auth.login", actorEmail: email, details: { success: false, reason: "invalid_password" } });
       return { error: "Invalid email or password." };
     }
 
@@ -83,6 +90,7 @@ export async function loginAction(
     );
 
     await updateLastLogin(user.id);
+    void writeAuditLog({ action: "auth.login", actorEmail: user.email, actorRole: user.role, details: { success: true } });
 
     if (user.status === "invited") {
       await updateUserStatus(user.id, "active");
@@ -144,6 +152,9 @@ export async function forgotPasswordAction(
       const fe = parsed.error.flatten().fieldErrors as { email?: string[] };
       return { fieldErrors: fe };
     }
+
+    const rl = checkRateLimit("forgot-password", parsed.data.email.toLowerCase(), LIMITS.forgotPassword);
+    if (!rl.allowed) return { error: rl.message };
 
     const user = await getUserByEmail(parsed.data.email);
     if (!user) return { success: true }; // avoid email enumeration

@@ -623,3 +623,383 @@ export type DbSyncHistory = {
   started_at: string;
   completed_at: string | null;
 };
+
+// ─── Phase 9 enums ────────────────────────────────────────────────────────────
+
+export type LeadScore = "Hot" | "Warm" | "Cold" | "Disqualified";
+export type ReplyClass = "Interested" | "Meeting Requested" | "Follow Up Later" | "Not Interested" | "Wrong Contact" | "Out Of Office" | "Spam";
+export type AiTaskType = "lead_scoring" | "prospect_research" | "account_research" | "campaign_analysis" | "icp_analysis" | "client_summary" | "discovery_summary" | "reply_classification";
+export type ResearchType = "prospect" | "account" | "discovery";
+export type InsightType = "icp_analysis" | "campaign_analysis" | "client_summary";
+export type AiPromptCategory = "lead_scoring" | "research" | "analysis" | "classification";
+
+// ─── Phase 9 table types ──────────────────────────────────────────────────────
+
+export type DbAiJob = {
+  id: number;
+  job_id: number | null;
+  task_type: AiTaskType;
+  status: string;
+  subject_id: number | null;
+  subject_type: string | null;
+  subject_name: string | null;
+  result_id: number | null;
+  result_type: string | null;
+  error_message: string | null;
+  created_at: string;
+  completed_at: string | null;
+};
+
+export type DbAiPrompt = {
+  id: number;
+  name: string;
+  category: AiPromptCategory;
+  description: string | null;
+  prompt: string;
+  is_active: boolean;
+  is_default: boolean;
+  version: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbLeadScore = {
+  id: number;
+  apollo_lead_id: number;
+  score: LeadScore;
+  confidence: number | null;
+  reason: string | null;
+  model: string | null;
+  tokens_input: number | null;
+  tokens_output: number | null;
+  created_at: string;
+};
+
+export type DbReplyClassification = {
+  id: number;
+  campaign_id: string | null;
+  reply_id: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  reply_text: string | null;
+  classification: ReplyClass;
+  confidence: number | null;
+  reason: string | null;
+  model: string | null;
+  tokens_input: number | null;
+  tokens_output: number | null;
+  created_at: string;
+};
+
+export type DbResearchReport = {
+  id: number;
+  report_type: ResearchType;
+  subject_name: string;
+  subject_company: string | null;
+  input_data: string | null;
+  report_markdown: string;
+  model: string | null;
+  tokens_input: number | null;
+  tokens_output: number | null;
+  client_id: number | null;
+  created_at: string;
+};
+
+export type DbAiInsight = {
+  id: number;
+  insight_type: InsightType;
+  title: string;
+  subject_id: number | null;
+  subject_name: string | null;
+  input_data: string | null;
+  insight_markdown: string;
+  model: string | null;
+  tokens_input: number | null;
+  tokens_output: number | null;
+  client_id: number | null;
+  created_at: string;
+};
+
+export type DbAiUsage = {
+  id: number;
+  task_type: string;
+  model: string;
+  tokens_input: number;
+  tokens_output: number;
+  cost_usd: number | null;
+  response_time_ms: number | null;
+  client_id: number | null;
+  created_at: string;
+};
+
+// ─── Phase 10 enums ───────────────────────────────────────────────────────────
+
+export type SubscriptionStatus = "Trial" | "Active" | "Past Due" | "Paused" | "Cancelled" | "Expired";
+export type BillingPaymentStatus = "Pending" | "Paid" | "Failed" | "Refunded" | "Partially Refunded";
+export type RefundStatus = "Pending" | "Processed" | "Failed";
+export type PlanChangeType = "upgrade" | "downgrade" | "custom";
+export type RenewalEventStatus = "Renewed" | "Failed" | "Skipped" | "Cancelled";
+export type PlanBillingCycle = "monthly" | "annual" | "one_time";
+export type PlanStatus = "Active" | "Inactive" | "Archived";
+
+// ─── Phase 10 table types ─────────────────────────────────────────────────────
+
+export type DbPlan = {
+  id: number;
+  name: string;
+  slug: string;
+  tier: string | null;
+  description: string | null;
+  price_monthly: number;
+  price_annual: number | null;
+  features: string[];
+  billing_cycle: PlanBillingCycle;
+  status: PlanStatus;
+  stripe_price_id: string | null;
+  stripe_product_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbStripeCustomer = {
+  id: number;
+  client_id: number;
+  stripe_customer_id: string;
+  email: string | null;
+  name: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbSubscription = {
+  id: number;
+  client_id: number;
+  client_name: string | null;
+  stripe_customer_id: number | null;
+  stripe_subscription_id: string | null;
+  plan_id: number | null;
+  plan_name: string | null;
+  tier: string | null;
+  status: SubscriptionStatus;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  trial_end: string | null;
+  cancel_at: string | null;
+  cancelled_at: string | null;
+  mrr: number | null;
+  arr: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbRefund = {
+  id: number;
+  payment_id: number | null;
+  client_id: number | null;
+  client_name: string | null;
+  stripe_refund_id: string | null;
+  amount: number;
+  currency: string;
+  reason: string | null;
+  status: RefundStatus;
+  processed_by: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export type DbBillingEvent = {
+  id: number;
+  stripe_event_id: string | null;
+  event_type: string;
+  payload: string | null;
+  processed: boolean;
+  error_message: string | null;
+  created_at: string;
+};
+
+export type DbPlanChange = {
+  id: number;
+  client_id: number;
+  client_name: string | null;
+  subscription_id: number | null;
+  from_plan_id: number | null;
+  to_plan_id: number | null;
+  from_tier: string | null;
+  to_tier: string | null;
+  change_type: PlanChangeType;
+  effective_date: string | null;
+  reason: string | null;
+  revenue_impact: number | null;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type DbBillingRenewal = {
+  id: number;
+  client_id: number;
+  client_name: string | null;
+  subscription_id: number | null;
+  renewal_date: string;
+  status: RenewalEventStatus;
+  amount: number | null;
+  stripe_invoice_id: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+// ─── Phase 12 enums ───────────────────────────────────────────────────────────
+
+export type TestCaseStatus = "Pass" | "Fail" | "Needs Review";
+export type TicketStatus = "Open" | "In Progress" | "Resolved" | "Closed";
+export type TicketPriority = "Low" | "Medium" | "High" | "Critical";
+
+// ─── Phase 12 table types ─────────────────────────────────────────────────────
+
+export type DbSop = {
+  id: number;
+  title: string;
+  category: string;
+  content: string | null;
+  status: string;
+  version: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbDocPage = {
+  id: number;
+  title: string;
+  category: string;
+  content: string | null;
+  status: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbTestCase = {
+  id: number;
+  feature: string;
+  description: string | null;
+  category: string | null;
+  status: TestCaseStatus;
+  owner: string | null;
+  notes: string | null;
+  last_tested_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbSupportTicket = {
+  id: number;
+  title: string;
+  description: string | null;
+  status: TicketStatus;
+  priority: TicketPriority;
+  client_id: number | null;
+  client_name: string | null;
+  assigned_to: string | null;
+  resolution_notes: string | null;
+  resolved_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DbOffboardingRecord = {
+  id: number;
+  client_id: number;
+  client_name: string | null;
+  reason: string | null;
+  offboarding_date: string | null;
+  data_exported: boolean;
+  access_disabled: boolean;
+  archived: boolean;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type DbClientTemplate = {
+  id: number;
+  name: string;
+  tier: string;
+  description: string | null;
+  default_status: string;
+  features: string[];
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+// ─── Phase 11 types ───────────────────────────────────────────────────────────
+
+export type DbAuditLog = {
+  id: number;
+  action: string;
+  actor_id: number | null;
+  actor_email: string | null;
+  actor_role: string | null;
+  target_type: string | null;
+  target_id: number | null;
+  details: Record<string, unknown> | null;
+  ip_address: string | null;
+  created_at: string;
+};
+
+export type DbErrorLog = {
+  id: number;
+  error_type: string;
+  message: string;
+  stack: string | null;
+  context: Record<string, unknown> | null;
+  resolved: boolean;
+  resolved_at: string | null;
+  created_at: string;
+};
+
+export type DbHealthCheckResult = {
+  id: number;
+  service: string;
+  status: string;
+  message: string | null;
+  response_time_ms: number | null;
+  checked_at: string;
+};
+
+// Extended payment type with Stripe fields
+export type DbBillingPayment = {
+  id: number;
+  invoice_id: number | null;
+  invoice_number: string | null;
+  client_id: number | null;
+  client_name: string | null;
+  amount: number;
+  payment_date: string;
+  method: string;
+  reference: string | null;
+  notes: string | null;
+  stripe_payment_intent_id: string | null;
+  stripe_charge_id: string | null;
+  currency: string;
+  billing_status: string;
+  created_at: string;
+};
+
+// ─── Phase 13 — Payment Providers ─────────────────────────────────────────────
+
+export type ProviderStatus = "active" | "coming_soon" | "disabled";
+
+export type DbPaymentProvider = {
+  id: number;
+  name: string;
+  display_name: string;
+  status: ProviderStatus;
+  enabled: boolean;
+  sandbox_mode: boolean;
+  api_configured: boolean;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+};

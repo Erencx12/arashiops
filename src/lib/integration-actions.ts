@@ -8,8 +8,11 @@ import {
   updateCredentialStatus, addSystemLog, updateIntegrationHealth,
   createNotification,
 } from "./queries";
+import { verifyOwnerSession } from "./dal";
+import { writeAuditLog } from "./audit";
 
 export async function toggleIntegrationAction(id: number, enabled: boolean): Promise<void> {
+  await verifyOwnerSession();
   await toggleIntegration(id, enabled);
   await addSystemLog({
     eventType: "integration",
@@ -31,6 +34,7 @@ export async function addCredentialAction(
   _prev: { error?: string; success?: boolean } | null,
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
+  await verifyOwnerSession();
   const parsed = CredentialSchema.safeParse({
     integrationId: formData.get("integrationId"),
     service:       formData.get("service"),
@@ -55,6 +59,7 @@ export async function addCredentialAction(
       message: `API key added for ${service} (${keyLabel})`,
       module: "integrations",
     });
+    void writeAuditLog({ action: "api_key.added", details: { service, keyLabel } });
     revalidatePath("/admin/integrations");
     return { success: true };
   } catch (err) {
@@ -63,6 +68,7 @@ export async function addCredentialAction(
 }
 
 export async function deleteCredentialAction(id: number): Promise<void> {
+  await verifyOwnerSession();
   await deleteCredential(id);
   await addSystemLog({
     eventType: "security",
@@ -70,10 +76,12 @@ export async function deleteCredentialAction(id: number): Promise<void> {
     message: `API key deleted (credential id: ${id})`,
     module: "integrations",
   });
+  void writeAuditLog({ action: "api_key.removed", details: { credentialId: id } });
   revalidatePath("/admin/integrations");
 }
 
 export async function updateCredentialStatusAction(id: number, status: string): Promise<void> {
+  await verifyOwnerSession();
   await updateCredentialStatus(id, status);
   revalidatePath("/admin/integrations");
 }
@@ -82,6 +90,7 @@ export async function connectIntegrationAction(
   integrationId: number,
   slug: string
 ): Promise<{ success: boolean; error?: string }> {
+  await verifyOwnerSession();
   try {
     await updateIntegrationHealth(integrationId, {
       status:      "Connected",
@@ -108,6 +117,7 @@ export async function connectIntegrationAction(
 }
 
 export async function disconnectIntegrationAction(integrationId: number, slug: string): Promise<void> {
+  await verifyOwnerSession();
   await toggleIntegration(integrationId, false);
   await updateIntegrationHealth(integrationId, {
     status:      "Disconnected",
@@ -126,6 +136,7 @@ export async function markIntegrationErrorAction(
   integrationId: number,
   error: string
 ): Promise<void> {
+  await verifyOwnerSession();
   await updateIntegrationHealth(integrationId, {
     status:      "Error",
     lastError:   error,

@@ -9,6 +9,7 @@ import {
   createNotification,
 } from "./queries";
 import { sql } from "./db";
+import { writeAuditLog } from "./audit";
 
 // ─── Update tier ──────────────────────────────────────────────────────────────
 
@@ -21,6 +22,7 @@ export async function updateClientTierAction(
     if (!session) return { ok: false, error: "Unauthorized." };
 
     await updateClientTier(clientId, tier);
+    void writeAuditLog({ action: "client.tier_changed", targetType: "client", targetId: clientId, details: { newTier: tier } });
     await createNotification({
       type: "tier_upgraded",
       title: "Tier Updated",
@@ -51,6 +53,7 @@ export async function updateClientStatusAction(
     if (!session) return { ok: false, error: "Unauthorized." };
 
     await updateClientStatus(clientId, status);
+    void writeAuditLog({ action: "client.status_changed", targetType: "client", targetId: clientId, details: { newStatus: status } });
     await sql`
       INSERT INTO activity_log (type, description)
       VALUES ('client', ${`Client #${clientId} status changed to ${status}`})

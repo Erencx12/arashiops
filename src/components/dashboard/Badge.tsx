@@ -79,6 +79,34 @@ const styles: Record<string, string> = {
   Error:                     "bg-red-50 text-red-700 border-red-100",
   Success:                   "bg-emerald-50 text-emerald-700 border-emerald-100",
   Bounced:                   "bg-orange-50 text-orange-700 border-orange-100",
+  // Phase 9 — AI lead scores
+  Hot:                       "bg-red-50 text-red-700 border-red-100",
+  Warm:                      "bg-amber-50 text-amber-700 border-amber-100",
+  Cold:                      "bg-blue-50 text-blue-700 border-blue-100",
+  Disqualified:              "bg-[#f3f4f6] text-[#9ca3af] border-[#e5e7eb]",
+  Unscored:                  "bg-[#f3f4f6] text-[#9ca3af] border-[#e5e7eb]",
+  // Phase 10 — Subscription statuses
+  Trial:                     "bg-violet-50 text-violet-700 border-violet-100",
+  "Past Due":                "bg-red-50 text-red-700 border-red-100",
+  // Phase 12 — Support tickets
+  "Open":                    "bg-blue-50 text-blue-700 border-blue-100",
+  "Resolved":                "bg-emerald-50 text-emerald-700 border-emerald-100",
+  "Closed":                  "bg-[#f3f4f6] text-[#9ca3af] border-[#e5e7eb]",
+  // Phase 12 — Test cases
+  "Pass":                    "bg-emerald-50 text-emerald-700 border-emerald-100",
+  "Fail":                    "bg-red-50 text-red-700 border-red-100",
+  "Needs Review":            "bg-amber-50 text-amber-700 border-amber-100",
+  // Phase 10 — Payment statuses
+  "Partially Refunded":      "bg-teal-50 text-teal-700 border-teal-100",
+  Refunded:                  "bg-[#f3f4f6] text-[#6b7280] border-[#e5e7eb]",
+  // Phase 9 — Reply classifications
+  Interested:                "bg-emerald-50 text-emerald-700 border-emerald-100",
+  "Meeting Requested":       "bg-violet-50 text-violet-700 border-violet-100",
+  "Follow Up Later":         "bg-blue-50 text-blue-700 border-blue-100",
+  "Not Interested":          "bg-red-50 text-red-700 border-red-100",
+  "Wrong Contact":           "bg-orange-50 text-orange-700 border-orange-100",
+  "Out Of Office":           "bg-[#f3f4f6] text-[#6b7280] border-[#e5e7eb]",
+  Spam:                      "bg-[#f3f4f6] text-[#9ca3af] border-[#e5e7eb]",
 };
 
 export function Badge({ label }: { label: string }) {
