@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { isStripeConfigured } from "@/lib/stripe";
+import { isPayPalConfigured } from "@/lib/paypal";
 import { isApiKeyConfigured } from "@/lib/claude";
 import { recordHealthCheck } from "@/lib/audit";
 import { smtp as smtpConfig, apollo as apolloConfig } from "@/lib/config";
@@ -78,6 +79,32 @@ async function checkSmtp(): Promise<ServiceResult> {
   return { service: "smtp", status: "healthy", message: "Configured", responseTimeMs: 0 };
 }
 
+async function checkPayPal(): Promise<ServiceResult> {
+  const t = Date.now();
+  if (!isPayPalConfigured()) {
+    return { service: "paypal", status: "degraded", message: "Not configured", responseTimeMs: 0 };
+  }
+  try {
+    const id     = process.env.PAYPAL_CLIENT_ID!;
+    const secret = process.env.PAYPAL_CLIENT_SECRET!;
+    const creds  = Buffer.from(`${id}:${secret}`).toString("base64");
+    const base   = process.env.PAYPAL_MODE === "sandbox"
+      ? "https://api-m.sandbox.paypal.com"
+      : "https://api-m.paypal.com";
+    const res = await fetch(`${base}/v1/oauth2/token`, {
+      method: "POST",
+      headers: { Authorization: `Basic ${creds}`, "Content-Type": "application/x-www-form-urlencoded" },
+      body:   "grant_type=client_credentials",
+      signal: AbortSignal.timeout(5000),
+    });
+    const ms = Date.now() - t;
+    if (res.ok) return { service: "paypal", status: "healthy", message: "API reachable", responseTimeMs: ms };
+    return { service: "paypal", status: "degraded", message: `HTTP ${res.status}`, responseTimeMs: ms };
+  } catch {
+    return { service: "paypal", status: "degraded", message: "API unreachable", responseTimeMs: Date.now() - t };
+  }
+}
+
 async function checkApollo(): Promise<ServiceResult> {
   const t = Date.now();
   if (!apolloConfig.isConfigured()) {
@@ -104,15 +131,16 @@ function overallStatus(results: ServiceResult[]): ServiceStatus {
 }
 
 export async function GET() {
-  const [db, claudeResult, stripe, smtpResult, apolloResult] = await Promise.all([
+  const [db, claudeResult, stripe, paypalResult, smtpResult, apolloResult] = await Promise.all([
     checkDatabase(),
     checkClaude(),
     checkStripe(),
+    checkPayPal(),
     checkSmtp(),
     checkApollo(),
   ]);
 
-  const services = [db, claudeResult, stripe, smtpResult, apolloResult];
+  const services = [db, claudeResult, stripe, paypalResult, smtpResult, apolloResult];
   const status = overallStatus(services);
 
   // Persist results best-effort (don't await — don't slow the response)

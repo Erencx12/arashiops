@@ -2155,16 +2155,19 @@ export async function updatePlan(id: number, data: {
   name?: string; description?: string | null; priceMonthly?: number;
   priceAnnual?: number | null; features?: string[]; status?: string;
   stripePriceId?: string | null; stripeProductId?: string | null;
+  paypalPlanId?: string | null; paypalProductId?: string | null;
 }): Promise<void> {
   const ops: Promise<unknown>[] = [];
-  if (data.name         !== undefined) ops.push(sql`UPDATE plans SET name = ${data.name}, updated_at = NOW() WHERE id = ${id}`);
-  if (data.description  !== undefined) ops.push(sql`UPDATE plans SET description = ${data.description}, updated_at = NOW() WHERE id = ${id}`);
-  if (data.priceMonthly !== undefined) ops.push(sql`UPDATE plans SET price_monthly = ${data.priceMonthly}, updated_at = NOW() WHERE id = ${id}`);
-  if (data.priceAnnual  !== undefined) ops.push(sql`UPDATE plans SET price_annual = ${data.priceAnnual}, updated_at = NOW() WHERE id = ${id}`);
-  if (data.features     !== undefined) ops.push(sql`UPDATE plans SET features = ${data.features}, updated_at = NOW() WHERE id = ${id}`);
-  if (data.status       !== undefined) ops.push(sql`UPDATE plans SET status = ${data.status}, updated_at = NOW() WHERE id = ${id}`);
-  if (data.stripePriceId !== undefined) ops.push(sql`UPDATE plans SET stripe_price_id = ${data.stripePriceId}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.name            !== undefined) ops.push(sql`UPDATE plans SET name = ${data.name}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.description     !== undefined) ops.push(sql`UPDATE plans SET description = ${data.description}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.priceMonthly    !== undefined) ops.push(sql`UPDATE plans SET price_monthly = ${data.priceMonthly}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.priceAnnual     !== undefined) ops.push(sql`UPDATE plans SET price_annual = ${data.priceAnnual}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.features        !== undefined) ops.push(sql`UPDATE plans SET features = ${data.features}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.status          !== undefined) ops.push(sql`UPDATE plans SET status = ${data.status}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.stripePriceId   !== undefined) ops.push(sql`UPDATE plans SET stripe_price_id = ${data.stripePriceId}, updated_at = NOW() WHERE id = ${id}`);
   if (data.stripeProductId !== undefined) ops.push(sql`UPDATE plans SET stripe_product_id = ${data.stripeProductId}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.paypalPlanId    !== undefined) ops.push(sql`UPDATE plans SET paypal_plan_id = ${data.paypalPlanId}, updated_at = NOW() WHERE id = ${id}`);
+  if (data.paypalProductId !== undefined) ops.push(sql`UPDATE plans SET paypal_product_id = ${data.paypalProductId}, updated_at = NOW() WHERE id = ${id}`);
   await Promise.all(ops);
 }
 

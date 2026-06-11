@@ -10,7 +10,6 @@ import {
   getStripeCustomer, upsertStripeCustomer,
   createNotification, addSystemLog, getClients,
 } from "./queries";
-import { isStripeConfigured, getOrCreateStripeCustomer, createCheckoutSession } from "./stripe";
 import { getActiveProvider } from "./payments";
 import { writeAuditLog } from "./audit";
 
@@ -28,7 +27,9 @@ export async function createCheckoutAction(clientId: number, planSlug: string): 
   const plan = await getPlanBySlug(planSlug);
   if (!plan) return { error: "Plan not found" };
 
-  if (!isStripeConfigured()) {
+  const provider = getActiveProvider();
+
+  if (!provider.isConfigured()) {
     // Demo mode: create subscription manually
     const existing = await getActiveSubscription(clientId);
     if (!existing) {
@@ -48,25 +49,39 @@ export async function createCheckoutAction(clientId: number, planSlug: string): 
   }
 
   try {
-    if (!plan.stripe_price_id) return { error: "This plan does not have a Stripe Price ID configured" };
-    let stripeCustomerRow = await getStripeCustomer(clientId);
-    let stripeCustomerId: string;
-    if (stripeCustomerRow) {
-      stripeCustomerId = stripeCustomerRow.stripe_customer_id;
+    // Resolve the provider-specific plan/price ID
+    let priceId: string | null = null;
+    if (provider.providerName === "paypal") {
+      priceId = (plan as any).paypal_plan_id ?? null;
+      if (!priceId) return { error: "This plan has no PayPal Plan ID. Add it under Billing → Plans." };
     } else {
-      stripeCustomerId = await getOrCreateStripeCustomer(clientId, client.email, client.company_name);
-      await upsertStripeCustomer({ clientId, stripeCustomerId, email: client.email, name: client.company_name });
+      priceId = plan.stripe_price_id ?? null;
+      if (!priceId) return { error: "This plan has no Stripe Price ID configured." };
     }
-    const { sessionId, url } = await createCheckoutSession({
-      stripeCustomerId,
-      priceId: plan.stripe_price_id,
+
+    // Create / retrieve provider customer reference
+    const providerCustomerId = await provider.createCustomer({
+      clientId, email: client.email, name: client.company_name,
+    });
+
+    // Persist Stripe customer mapping when Stripe is active
+    if (provider.providerName === "stripe") {
+      const existing = await getStripeCustomer(clientId);
+      if (!existing) {
+        await upsertStripeCustomer({ clientId, stripeCustomerId: providerCustomerId, email: client.email, name: client.company_name });
+      }
+    }
+
+    const { sessionId, url } = await provider.createCheckout({
+      providerCustomerId,
+      priceId,
       successUrl: `${APP_URL}/admin/billing?success=1`,
       cancelUrl:  `${APP_URL}/admin/billing?cancelled=1`,
       metadata: { arashi_client_id: String(clientId), plan_slug: planSlug },
     });
     return { sessionId, checkoutUrl: url };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : "Stripe error" };
+    return { error: err instanceof Error ? err.message : "Payment provider error" };
   }
 }
 
@@ -276,6 +291,7 @@ export async function createPlanAction(
 export async function updatePlanAction(id: number, data: {
   status?: string; priceMonthly?: number; description?: string | null;
   stripePriceId?: string | null; stripeProductId?: string | null;
+  paypalPlanId?: string | null; paypalProductId?: string | null;
 }): Promise<void> {
   await updatePlan(id, data);
   revalidatePath("/admin/billing");

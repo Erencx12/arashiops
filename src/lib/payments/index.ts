@@ -27,6 +27,7 @@ export function getProvider(name: string): PaymentProvider {
 }
 
 export function getActiveProvider(): PaymentProvider {
+  if (_paypal.isConfigured()) return _paypal;
   if (_stripe.isConfigured()) return _stripe;
   return _manual;
 }

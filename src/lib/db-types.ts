@@ -757,6 +757,8 @@ export type DbPlan = {
   status: PlanStatus;
   stripe_price_id: string | null;
   stripe_product_id: string | null;
+  paypal_plan_id: string | null;
+  paypal_product_id: string | null;
   created_at: string;
   updated_at: string;
 };
