@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { verifyOwnerSession } from "./dal";
-import { logPayment, updateInvoiceStatus, updateContractStatus, createContract, createInvoice } from "./queries";
+import { logPayment, updateInvoiceStatus, updateContractStatus, createContract, createInvoice, getInvoiceById } from "./queries";
 import { sql } from "./db";
+import { sendInvoiceEmail } from "./email";
 
 export type PaymentActionState = { error?: string; success?: boolean } | null;
 
@@ -64,6 +65,18 @@ export async function updateInvoiceStatusAction(
 ): Promise<void> {
   await verifyOwnerSession();
   await updateInvoiceStatus(invoiceId, status);
+  if (status === "Sent") {
+    const invoice = await getInvoiceById(invoiceId);
+    if (invoice?.client_email) {
+      await sendInvoiceEmail(
+        invoice.client_email,
+        invoice.contact_name ?? invoice.client_email,
+        invoice.invoice_number,
+        invoice.amount,
+        invoice.due_date ?? "—"
+      );
+    }
+  }
   revalidatePath("/admin/invoices");
 }
 
