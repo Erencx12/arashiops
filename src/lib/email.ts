@@ -186,8 +186,11 @@ export async function sendInvoiceEmail(to: string, clientName: string, invoiceNu
           </table>
         </div>
         <!-- CTA -->
+        <div style="text-align:center;margin-bottom:16px">
+          <a href="https://paypal.me/Arashiops/${amount}" style="display:inline-block;background:#0070ba;color:#ffffff;font-size:14px;font-weight:600;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:-0.1px">Pay $${amount.toLocaleString()} via PayPal →</a>
+        </div>
         <div style="text-align:center;margin-bottom:28px">
-          <a href="${portalLink}" style="display:inline-block;background:#111111;color:#ffffff;font-size:14px;font-weight:600;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:-0.1px">View Invoice &amp; Pay →</a>
+          <a href="${portalLink}" style="font-size:12px;color:#6b7280;text-decoration:underline">View invoice in portal</a>
         </div>
         <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center">Questions? Reply to this email or contact your Arashi OPS account manager.</p>
       </div>
