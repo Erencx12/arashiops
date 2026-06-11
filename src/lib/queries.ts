@@ -26,7 +26,7 @@ function cast<T>(p: Promise<unknown>): Promise<T[]> {
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
-const CLIENT_COLS = sql`
+const CLIENT_COLS = sql.unsafe(`
   id, company_name, contact_name, email, tier, status,
   monthly_value, industry, owner, health_score,
   to_char(renewal_date, 'Mon YYYY') AS renewal_date,
@@ -35,7 +35,7 @@ const CLIENT_COLS = sql`
   COALESCE(tags, '{}') AS tags,
   contract_status,
   internal_notes
-`;
+`);
 
 export function getClients(): Promise<DbClient[]> {
   return cast<DbClient>(sql`SELECT ${CLIENT_COLS} FROM clients ORDER BY created_at ASC`);
@@ -53,7 +53,7 @@ export async function getClientByName(name: string): Promise<DbClient | null> {
 
 // ─── Projects ─────────────────────────────────────────────────────────────────
 
-const PROJECT_COLS = sql`
+const PROJECT_COLS = sql.unsafe(`
   p.id, p.client_id, c.company_name AS client_name, p.title,
   p.status, p.progress, p.start_date,
   to_char(p.deadline, 'Mon DD, YYYY') AS deadline,
@@ -61,7 +61,7 @@ const PROJECT_COLS = sql`
   COALESCE(p.priority, 'Medium') AS priority,
   p.description,
   p.assigned_owner
-`;
+`);
 
 export function getProjects(): Promise<DbProject[]> {
   return cast<DbProject>(sql`
@@ -104,13 +104,13 @@ export function getAgentTasks(): Promise<DbAgentTask[]> {
 
 // ─── Approvals ────────────────────────────────────────────────────────────────
 
-const APPROVAL_COLS = sql`
+const APPROVAL_COLS = sql.unsafe(`
   a.id, a.type, a.title, a.client_id, c.company_name AS client_name,
   a.agent, a.status, a.comment,
   COALESCE(a.client_comment, NULL) AS client_comment,
   COALESCE(a.deliverable_id, NULL) AS deliverable_id,
   to_char(a.created_at, 'Mon DD, YYYY') AS created_at
-`;
+`);
 
 export function getApprovals(): Promise<DbApproval[]> {
   return cast<DbApproval>(sql`
@@ -131,14 +131,14 @@ export function getApprovalsByClient(clientId: number): Promise<DbApproval[]> {
 
 // ─── Content Items ────────────────────────────────────────────────────────────
 
-const CONTENT_COLS = sql`
+const CONTENT_COLS = sql.unsafe(`
   ci.id, ci.client_id, c.company_name AS client_name, ci.type,
   ci.title, ci.size_label, COALESCE(ci.tags, '{}') AS tags,
   COALESCE(ci.status, 'Awaiting Approval') AS status,
   COALESCE(ci.version, 'v1') AS version,
   ci.project_id,
   to_char(ci.created_at, 'Mon DD, YYYY') AS created_at
-`;
+`);
 
 export function getContentItems(): Promise<DbContentItem[]> {
   return cast<DbContentItem>(sql`
@@ -504,14 +504,14 @@ export async function updateMilestoneStatus(id: number, status: string): Promise
 
 // ─── Phase 5: Tasks ───────────────────────────────────────────────────────────
 
-const TASK_COLS = sql`
+const TASK_COLS = sql.unsafe(`
   t.id, t.title, t.description, t.priority, t.status, t.assignee,
   t.client_id, c.company_name AS client_name,
   t.project_id, p.title AS project_title,
   to_char(t.due_date, 'Mon DD, YYYY') AS due_date,
   to_char(t.created_at, 'Mon DD, YYYY') AS created_at,
   completed_at::text AS completed_at
-`;
+`);
 
 export function getTasks(): Promise<DbTask[]> {
   return cast<DbTask>(sql`
