@@ -135,7 +135,7 @@ const CONTENT_COLS = sql`
   ci.id, ci.client_id, c.company_name AS client_name, ci.type,
   ci.title, ci.size_label, COALESCE(ci.tags, '{}') AS tags,
   COALESCE(ci.status, 'Awaiting Approval') AS status,
-  COALESCE(ci.version, '1.0') AS version,
+  COALESCE(ci.version, 'v1') AS version,
   ci.project_id,
   to_char(ci.created_at, 'Mon DD, YYYY') AS created_at
 `;
