@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Arashi OPS
 
-## Getting Started
+> Agency operating system. Built to run a real B2B outreach agency — not a demo, not a template.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## What it does
+
+Arashi OPS is the internal OS for running a B2B revenue operations agency. It handles everything from client onboarding to AI-generated outreach to invoicing — in one platform.
+
+Clients get a portal. You get the command center.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        ARASHI OPS                           │
+│                                                             │
+│   ADMIN                          CLIENT PORTAL              │
+│   ─────                          ──────────────             │
+│   Overview · Metrics             Onboarding                 │
+│   Clients · Projects             Deliverables               │
+│   Deals · Proposals              Approvals                  │
+│   Contracts · Invoices           Revenue Dashboard          │
+│   AI Leads · Lead Scoring        Billing & Plans            │
+│   Integrations · Health          Reports · Lead Tracker     │
+│                                                             │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+        ┌──────────▼──────────┐
+        │   Neon PostgreSQL    │
+        │   (production DB)    │
+        └──────────┬──────────┘
+                   │
+    ┌──────────────▼──────────────────────────┐
+    │           n8n OUTREACH PIPELINE          │
+    │                                          │
+    │  Google Sheets (Apollo export)           │
+    │       ↓                                  │
+    │  Filter unprocessed leads                │
+    │       ↓                                  │
+    │  Jina AI  →  scrape company website      │
+    │       ↓                                  │
+    │  Gemini / Claude  →  research + email    │
+    │       ↓                                  │
+    │  Parse JSON output                       │
+    │       ↓                     ↓            │
+    │  Google Sheet          Arashi OPS        │
+    │  (AI results)          /api/n8n/leads    │
+    └──────────────────────────────────────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Layer | Tech |
+|---|---|
+| Framework | Next.js App Router |
+| Database | Neon PostgreSQL |
+| Auth | JWT sessions via `jose` |
+| Email | Nodemailer (Gmail SMTP) |
+| Payments | PayPal.me |
+| Automation | n8n Cloud |
+| AI | Google Gemini (free) → Claude (paid) |
+| Scraping | Jina AI (`r.jina.ai`) |
+| Hosting | Vercel |
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Tiers
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Tier | Price | Unlocks |
+|---|---|---|
+| Silver | $1,500/mo | Outbound foundation, 2 campaigns |
+| Gold | $4,500/mo | Full RevOps, 5 campaigns, Revenue Dashboard |
+| Enterprise | Custom | Multi-workflow, dedicated strategy, everything |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Outreach Pipeline
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+One n8n workflow. Swap the AI node to change models.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+Apollo CSV → Jina scrape → AI research → JSON parse → Sheet + DB
+```
+
+Output per lead: company summary, main problem, opportunity, personalized email, subject line, confidence score.
+
+No duplicate inserts. Unique constraint on `(name, company)`. Rate-limited with 6s delay between leads.
+
+---
+
+## Env vars
+
+```
+DATABASE_URL
+SESSION_SECRET
+SMTP_HOST / SMTP_USER / SMTP_PASS
+N8N_API_KEY
+ANTHROPIC_API_KEY       # when you get credits
+INSTANTLY_API_KEY       # when you get the sub
+```
+
+---
+
+## What activates next
+
+- [ ] Cold email domains + warming (Instantly/Smartlead)
+- [ ] Swap Gemini → Claude when credits land
+- [ ] Instantly API key → campaigns go live
+
+Everything else is live.
+
+---
+
+Built by [Arashi OPS](https://arashiops.vercel.app)
