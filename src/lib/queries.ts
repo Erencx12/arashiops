@@ -194,9 +194,11 @@ export async function getUpcomingMeetingsCount(): Promise<number> {
 
 export async function markMeetingsSeen(): Promise<void> {
   try {
-    await sql`ALTER TABLE meetings ADD COLUMN IF NOT EXISTS is_new BOOLEAN DEFAULT true`;
+    await sql`ALTER TABLE meetings ADD COLUMN IF NOT EXISTS is_new    BOOLEAN DEFAULT true`;
+    await sql`ALTER TABLE meetings ADD COLUMN IF NOT EXISTS video_url TEXT`;
+    await sql`ALTER TABLE meetings ADD COLUMN IF NOT EXISTS cal_uid   TEXT`;
     await sql`UPDATE meetings SET is_new = false WHERE is_new = true`;
-  } catch { /* column may not exist yet */ }
+  } catch { /* ignore */ }
 }
 
 export async function deleteMeeting(id: number): Promise<void> {
