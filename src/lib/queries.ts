@@ -170,7 +170,7 @@ export function getMeetings(): Promise<DbMeeting[]> {
     SELECT m.id, m.client_id,
            COALESCE(c.company_name, '—') AS client_name,
            m.title, m.type,
-           to_char(m.meeting_date, 'Mon DD, YYYY') AS meeting_date,
+           to_char(m.meeting_date::date, 'Mon DD, YYYY') AS meeting_date,
            m.meeting_time, m.status, m.notes, m.duration,
            COALESCE(m.video_url, NULL)  AS video_url,
            COALESCE(m.is_new, false)    AS is_new
