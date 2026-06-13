@@ -13,6 +13,7 @@ import {
   createNotification,
 } from "./queries";
 import { sql } from "./db";
+import { sendOnboardingConfirmationEmail } from "./email";
 
 // ─── Submit onboarding questionnaire (client action) ─────────────────────────
 
@@ -69,6 +70,17 @@ export async function submitOnboardingForm(
       INSERT INTO activity_log (type, description)
       VALUES ('onboarding', ${`Onboarding questionnaire submitted for client #${session.clientId}`})
     `;
+
+    // Send confirmation email
+    if (session.email) {
+      await sendOnboardingConfirmationEmail(session.email, session.name, {
+        company_name:      parsed.data.company_name,
+        industry:          parsed.data.industry,
+        target_market:     parsed.data.target_market,
+        business_goals:    parsed.data.business_goals,
+        primary_challenges: parsed.data.primary_challenges,
+      }).catch(() => {}); // non-blocking
+    }
 
     revalidatePath("/client/onboarding");
     revalidatePath(`/admin/clients/${session.clientId}/onboarding`);

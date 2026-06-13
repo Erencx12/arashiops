@@ -226,6 +226,129 @@ export async function sendContractEmail(to: string, clientName: string, contract
   return sendEmail({ to, subject: `Contract ${contractNumber} — Action Required`, html, template: "contract" });
 }
 
+export async function sendOnboardingConfirmationEmail(
+  to: string,
+  clientName: string,
+  data: {
+    company_name: string;
+    industry: string;
+    target_market: string;
+    business_goals: string;
+    primary_challenges: string;
+  }
+): Promise<SendResult> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://arashiops.vercel.app";
+  const portalLink = `${appUrl}/client/onboarding`;
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff">
+
+      <!-- Header -->
+      <div style="background:#0a0a0a;padding:32px 40px;border-radius:12px 12px 0 0">
+        <table style="width:100%;border-collapse:collapse">
+          <tr>
+            <td>
+              <div style="display:inline-flex;align-items:center;gap:10px">
+                <div style="width:32px;height:32px;background:#ffffff;border-radius:8px;display:flex;align-items:center;justify-content:center">
+                  <span style="font-size:18px;font-weight:900;color:#0a0a0a;letter-spacing:-1px;font-family:Arial,sans-serif">A</span>
+                </div>
+                <span style="font-size:17px;font-weight:700;color:#ffffff;letter-spacing:-0.3px">Arashi OPS</span>
+              </div>
+            </td>
+            <td style="text-align:right">
+              <span style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.08em">Revenue Operations</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Hero -->
+      <div style="background:#0a0a0a;padding:0 40px 40px">
+        <div style="border-top:1px solid #1f1f1f;padding-top:32px">
+          <p style="margin:0 0 8px;font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;font-weight:600">We're locked in</p>
+          <h1 style="margin:0 0 12px;font-size:28px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.2">Your onboarding is confirmed.</h1>
+          <p style="margin:0;font-size:15px;color:#9ca3af;line-height:1.6">Hi ${clientName}, we've received everything we need to get started. Here's what we captured — and what happens next.</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div style="background:#ffffff;padding:40px;border:1px solid #e5e7eb;border-top:none">
+
+        <!-- What we heard -->
+        <p style="margin:0 0 20px;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.1em">What we captured</p>
+
+        <table style="width:100%;border-collapse:collapse;margin-bottom:32px">
+          <tr>
+            <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;vertical-align:top;width:38%">
+              <span style="font-size:12px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em">Company</span>
+            </td>
+            <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;vertical-align:top">
+              <span style="font-size:14px;color:#111111;font-weight:500">${data.company_name}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;vertical-align:top">
+              <span style="font-size:12px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em">Industry</span>
+            </td>
+            <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;vertical-align:top">
+              <span style="font-size:14px;color:#111111;font-weight:500">${data.industry}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;vertical-align:top">
+              <span style="font-size:12px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em">Target Market</span>
+            </td>
+            <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;vertical-align:top">
+              <span style="font-size:14px;color:#111111;font-weight:500">${data.target_market}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;vertical-align:top">
+              <span style="font-size:12px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em">Goals</span>
+            </td>
+            <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;vertical-align:top">
+              <span style="font-size:14px;color:#111111;font-weight:500">${data.business_goals}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:12px 0;vertical-align:top">
+              <span style="font-size:12px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em">Challenges</span>
+            </td>
+            <td style="padding:12px 0;vertical-align:top">
+              <span style="font-size:14px;color:#111111;font-weight:500">${data.primary_challenges}</span>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Next step -->
+        <div style="background:#0a0a0a;border-radius:10px;padding:24px 28px;margin-bottom:32px">
+          <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em">What's next</p>
+          <p style="margin:0 0 12px;font-size:16px;font-weight:700;color:#ffffff">Discovery call with the Arashi team</p>
+          <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.6">We'll use everything you've shared to come prepared. Expect a focused 30-minute session — no fluff, just strategy. We'll confirm the time shortly.</p>
+        </div>
+
+        <!-- CTA -->
+        <div style="text-align:center;margin-bottom:32px">
+          <a href="${portalLink}" style="display:inline-block;background:#0a0a0a;color:#ffffff;font-size:14px;font-weight:600;padding:14px 36px;border-radius:8px;text-decoration:none;letter-spacing:-0.2px">View your portal →</a>
+        </div>
+
+        <p style="margin:0;font-size:13px;color:#9ca3af;text-align:center;line-height:1.6">Questions before the call? Just reply to this email.<br/>We'll get back to you same day.</p>
+      </div>
+
+      <!-- Footer -->
+      <div style="padding:20px 40px;text-align:center;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;background:#fafafa">
+        <p style="margin:0;font-size:11px;color:#9ca3af">Arashi OPS · <a href="https://arashiops.vercel.app" style="color:#9ca3af;text-decoration:none">arashiops.vercel.app</a></p>
+      </div>
+
+    </div>
+  `;
+  return sendEmail({
+    to,
+    subject: `You're in, ${clientName.split(" ")[0]} — let's get to work`,
+    html,
+    template: "onboarding_confirmation",
+  });
+}
+
 export async function sendNotificationEmail(to: string, title: string, message: string): Promise<SendResult> {
   const html = `
     <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#111111">
