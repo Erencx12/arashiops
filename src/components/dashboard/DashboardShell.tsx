@@ -50,7 +50,7 @@ const OWNER_NAV: NavSection[] = [
     label: "Operations",
     items: [
       { label: "Agents",    href: "/admin/agents",    icon: Bot },
-      { label: "Approvals", href: "/admin/approvals", icon: SquareCheckBig, badge: 3 },
+      { label: "Approvals", href: "/admin/approvals", icon: SquareCheckBig },
       { label: "Content",   href: "/admin/content",   icon: FileText },
     ],
   },
@@ -139,7 +139,7 @@ function buildClientNav(revenueUnlocked: boolean): NavSection[] {
       label: "Work",
       items: [
         { label: "Deliverables", href: "/client/deliverables", icon: Package },
-        { label: "Approvals",    href: "/client/approvals",    icon: SquareCheckBig, badge: 2 },
+        { label: "Approvals",    href: "/client/approvals",    icon: SquareCheckBig },
         { label: "Files",        href: "/client/files",        icon: FolderOpen },
       ],
     },
@@ -170,13 +170,22 @@ type Props = {
   userName: string;
   userSub: string;
   userTier?: string;
+  pendingApprovals?: number;
   children: React.ReactNode;
 };
 
-export function DashboardShell({ role, userName, userSub, userTier, children }: Props) {
+export function DashboardShell({ role, userName, userSub, userTier, pendingApprovals, children }: Props) {
   const pathname = usePathname();
   const revenueUnlocked = userTier === "Gold" || userTier === "Enterprise";
-  const navSections = role === "owner" ? OWNER_NAV : buildClientNav(revenueUnlocked);
+  const ownerNav = OWNER_NAV.map(section => ({
+    ...section,
+    items: section.items.map(item =>
+      item.href === "/admin/approvals"
+        ? { ...item, badge: pendingApprovals && pendingApprovals > 0 ? pendingApprovals : undefined }
+        : item
+    ),
+  }));
+  const navSections = role === "owner" ? ownerNav : buildClientNav(revenueUnlocked);
 
   const initials = userName
     .split(" ")
