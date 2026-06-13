@@ -34,6 +34,14 @@ export async function POST(req: NextRequest) {
   await sql`
     INSERT INTO apollo_leads (name, company, title, email, client_id, company_summary, main_problem, opportunity, personalized_email, subject_line, confidence_score, ai_processed)
     VALUES (${name}, ${company}, ${title ?? null}, ${email ?? null}, ${clientId}, ${company_summary ?? null}, ${main_problem ?? null}, ${opportunity ?? null}, ${personalized_email ?? null}, ${subject_line ?? null}, ${score}, true)
+    ON CONFLICT (name, company) DO UPDATE SET
+      company_summary    = EXCLUDED.company_summary,
+      main_problem       = EXCLUDED.main_problem,
+      opportunity        = EXCLUDED.opportunity,
+      personalized_email = EXCLUDED.personalized_email,
+      subject_line       = EXCLUDED.subject_line,
+      confidence_score   = EXCLUDED.confidence_score,
+      ai_processed       = true
   `;
 
   return NextResponse.json({ ok: true, name, company });
