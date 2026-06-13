@@ -171,19 +171,22 @@ type Props = {
   userSub: string;
   userTier?: string;
   pendingApprovals?: number;
+  upcomingMeetings?: number;
   children: React.ReactNode;
 };
 
-export function DashboardShell({ role, userName, userSub, userTier, pendingApprovals, children }: Props) {
+export function DashboardShell({ role, userName, userSub, userTier, pendingApprovals, upcomingMeetings, children }: Props) {
   const pathname = usePathname();
   const revenueUnlocked = userTier === "Gold" || userTier === "Enterprise";
   const ownerNav = OWNER_NAV.map(section => ({
     ...section,
-    items: section.items.map(item =>
-      item.href === "/admin/approvals"
-        ? { ...item, badge: pendingApprovals && pendingApprovals > 0 ? pendingApprovals : undefined }
-        : item
-    ),
+    items: section.items.map(item => {
+      if (item.href === "/admin/approvals")
+        return { ...item, badge: pendingApprovals && pendingApprovals > 0 ? pendingApprovals : undefined };
+      if (item.href === "/admin/meetings")
+        return { ...item, badge: upcomingMeetings && upcomingMeetings > 0 ? upcomingMeetings : undefined };
+      return item;
+    }),
   }));
   const navSections = role === "owner" ? ownerNav : buildClientNav(revenueUnlocked);
 

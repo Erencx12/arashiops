@@ -178,6 +178,35 @@ export function getMeetings(): Promise<DbMeeting[]> {
   `);
 }
 
+export async function getUpcomingMeetingsCount(): Promise<number> {
+  const rows = await sql`SELECT COUNT(*) AS n FROM meetings WHERE status = 'Upcoming'` as unknown as { n: string }[];
+  return Number(rows[0]?.n ?? 0);
+}
+
+export async function upsertMeetingFromCal(data: {
+  calUid: string;
+  title: string;
+  meetingDate: string;
+  meetingTime: string;
+  duration: string;
+  status: "Upcoming" | "Completed" | "Cancelled";
+}): Promise<void> {
+  await sql`
+    ALTER TABLE meetings ADD COLUMN IF NOT EXISTS cal_uid TEXT UNIQUE
+  `;
+  await sql`
+    INSERT INTO meetings (cal_uid, title, type, meeting_date, meeting_time, duration, status)
+    VALUES (${data.calUid}, ${data.title}, 'Discovery Call',
+            ${data.meetingDate}::date, ${data.meetingTime}, ${data.duration}, ${data.status})
+    ON CONFLICT (cal_uid) DO UPDATE SET
+      title        = EXCLUDED.title,
+      meeting_date = EXCLUDED.meeting_date,
+      meeting_time = EXCLUDED.meeting_time,
+      duration     = EXCLUDED.duration,
+      status       = EXCLUDED.status
+  `;
+}
+
 // ─── Contracts ────────────────────────────────────────────────────────────────
 
 export function getContracts(): Promise<DbContract[]> {

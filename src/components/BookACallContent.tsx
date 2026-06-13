@@ -110,11 +110,11 @@ function CalEmbed() {
   }, []);
 
   return (
-    <div className="relative min-h-[600px]">
+    <div className="relative min-h-[900px]">
       <Cal
         namespace="discovery-call"
         calLink={CAL_LINK}
-        style={{ width: "100%", height: "100%" }}
+        style={{ width: "100%", height: "900px" }}
         config={{ layout: "month_view" }}
       />
       {!loaded && <CalSkeleton />}
@@ -271,7 +271,7 @@ export function BookACallContent() {
                     We've got your details. Now pick a time that works.
                   </p>
                 </div>
-                <div className="min-h-[600px]">
+                <div className="min-h-[900px]">
                   <CalEmbed />
                 </div>
               </div>
