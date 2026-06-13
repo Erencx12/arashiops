@@ -59,6 +59,19 @@ export default async function AdminOverview() {
   const pending = approvals.filter((a) => a.status === "Pending");
   const activeOrReview = projects.filter((p) => p.status === "Active" || p.status === "Review").slice(0, 5);
 
+  // Real calculated changes — no fake numbers
+  const dueThisWeek = projects.filter((p) => {
+    if (!p.deadline) return false;
+    const diff = new Date(p.deadline).getTime() - Date.now();
+    return diff >= 0 && diff <= 7 * 24 * 60 * 60 * 1000;
+  }).length;
+
+  const churned = clients.filter((c) => c.status === "Churned").length;
+  const totalEverClients = clients.length;
+  const retention = totalEverClients > 0
+    ? Math.round(((totalEverClients - churned) / totalEverClients) * 100)
+    : null;
+
   return (
     <div className="px-8 py-8">
       {/* Header */}
@@ -78,18 +91,18 @@ export default async function AdminOverview() {
 
       {/* Stats row 1 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <StatCard label="Monthly Revenue"   value={`$${stats.mrr.toLocaleString()}`}        change="+8.3% vs last month" trend="up" />
+        <StatCard label="Monthly Revenue"   value={`$${stats.mrr.toLocaleString()}`}        change={stats.mrr > 0 ? "Active MRR" : "No clients yet"} trend="neutral" />
         <StatCard label="Active Clients"    value={String(stats.activeClients)}              change={`${stats.totalClients} total`} trend="neutral" />
         <StatCard label="Pending Approvals" value={String(stats.pendingApprovals)}           change="Needs review" trend="neutral" />
-        <StatCard label="Active Projects"   value={String(stats.activeProjects)}             change="2 due this week" trend="neutral" />
+        <StatCard label="Active Projects"   value={String(stats.activeProjects)}             change={dueThisWeek > 0 ? `${dueThisWeek} due this week` : "No deadlines this week"} trend={dueThisWeek > 0 ? "up" : "neutral"} />
       </div>
 
       {/* Stats row 2 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard label="ARR"               value={`$${(stats.mrr * 12).toLocaleString()}`} change="Annualised" trend="neutral" />
-        <StatCard label="Avg Health Score"  value={String(stats.avgHealth)}                 change="+4 pts this month" trend="up" />
+        <StatCard label="Avg Health Score"  value={String(stats.avgHealth)}                 change="Avg across clients" trend="neutral" />
         <StatCard label="Upcoming Meetings" value={String(stats.upcomingMeetings)}           change="Next 7 days" trend="neutral" />
-        <StatCard label="Client Retention"  value="94%"                                      change="Rolling 6 months" trend="up" />
+        <StatCard label="Client Retention"  value={retention !== null ? `${retention}%` : "—"} change={totalEverClients > 0 ? "Active vs churned" : "No clients yet"} trend="neutral" />
       </div>
 
       {/* Main content grid */}

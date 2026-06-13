@@ -68,14 +68,14 @@ export default async function MetricsPage() {
 
       {/* Top KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <StatCard label="MRR"            value={`$${mrr.toLocaleString()}`}           change="+8.3% MoM" trend="up" />
+        <StatCard label="MRR"            value={`$${mrr.toLocaleString()}`}           change="Monthly recurring" trend="neutral" />
         <StatCard label="ARR"            value={`$${(arr / 1000).toFixed(0)}k`}       change="Annualised" trend="neutral" />
         <StatCard label="Active Clients" value={String(activeClients)}                change={`${clients.length} total`} trend="neutral" />
-        <StatCard label="Revenue Growth" value="8.3%"                                  change={`vs prev month`} trend="up" />
+        <StatCard label="Lead Close Rate"    value={`${closeRate}%`}                  change="Deals won / calls" trend="neutral" />
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Retention"          value="94%"                                             change="Rolling 6 months" trend="up" />
-        <StatCard label="Churn Rate"         value="0%"                                              change="No churns this period" trend="up" />
+        <StatCard label="Retention"          value={activeClients > 0 ? `${Math.round(((clients.filter(c=>c.status!=="Churned").length)/clients.length)*100)}%` : "—"} change={clients.length > 0 ? "Active vs churned" : "No clients yet"} trend="neutral" />
+        <StatCard label="Churn Rate"         value={clients.length > 0 ? `${Math.round((clients.filter(c=>c.status==="Churned").length/clients.length)*100)}%` : "—"} change={clients.length > 0 ? "Of total clients" : "No clients yet"} trend="neutral" />
         <StatCard label="Avg Contract Value" value={`$${activeClients ? Math.round(mrr / activeClients).toLocaleString() : 0}`} change="Per active client" trend="neutral" />
         <StatCard label="Lead Close Rate"    value={`${closeRate}%`}                                 change="Deals won / calls" trend="up" />
       </div>
@@ -90,10 +90,12 @@ export default async function MetricsPage() {
               <p className="text-[11px] font-semibold uppercase tracking-widest text-[#9ca3af] mb-1">MRR Trend</p>
               <p className="text-[22px] font-bold text-[#111111] tracking-tight">${mrr.toLocaleString()}</p>
             </div>
-            <div className="flex items-center gap-1 text-[12px] text-emerald-600">
-              <TrendingUp size={13} />
-              +129% since Jan
-            </div>
+            {mrrHistory.length >= 2 && (
+              <div className="flex items-center gap-1 text-[12px] text-emerald-600">
+                <TrendingUp size={13} />
+                {mrrHistory.length} months tracked
+              </div>
+            )}
           </div>
           {mrrHistory.length > 0 ? <BarChart data={mrrHistory} /> : (
             <div className="h-[100px] flex items-center justify-center text-[12px] text-[#9ca3af]">No data yet.</div>
