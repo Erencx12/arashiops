@@ -1,6 +1,6 @@
 import { verifyClientSession } from "@/lib/dal";
-import { getClientById, getOnboardingProgress, getOnboardingForm } from "@/lib/queries";
-import { OnboardingView } from "./OnboardingView";
+import { getClientById, getOnboardingProgress } from "@/lib/queries";
+import { CheckCircle2 } from "lucide-react";
 
 export const metadata = { title: "Onboarding — Arashi OPS" };
 
@@ -15,10 +15,9 @@ const STEPS = [
 
 export default async function ClientOnboardingPage() {
   const session = await verifyClientSession();
-  const [client, progress, form] = await Promise.all([
+  const [client, progress] = await Promise.all([
     getClientById(session.clientId),
     getOnboardingProgress(session.clientId),
-    getOnboardingForm(session.clientId),
   ]);
 
   if (!client) {
@@ -103,13 +102,16 @@ export default async function ClientOnboardingPage() {
         </div>
       </div>
 
-      {/* Questionnaire */}
-      <OnboardingView
-        clientId={client.id}
-        alreadySubmitted={Boolean(form)}
-        existingForm={form}
-        requirementsSubmitted={progress?.requirements_submitted ?? false}
-      />
+      {/* Questionnaire — submitted before booking */}
+      <div className="border border-emerald-100 rounded-xl bg-emerald-50 p-6 flex items-start gap-4">
+        <CheckCircle2 size={20} className="text-emerald-500 shrink-0 mt-0.5" />
+        <div>
+          <p className="text-[14px] font-semibold text-emerald-900">Questionnaire on file</p>
+          <p className="text-[13px] text-emerald-700 mt-1 leading-relaxed">
+            You submitted your business information before booking your discovery call. Our team has everything they need to come prepared — no action required here.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

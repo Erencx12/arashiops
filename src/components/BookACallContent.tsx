@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect, useState, useActionState } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
-import { Check, ArrowRight, X, Users, MessageSquare, Target } from "lucide-react";
+import { Check, X, Users, MessageSquare, Target, ArrowRight, CheckCircle2 } from "lucide-react";
+import { submitDiscoveryForm } from "@/lib/discovery-actions";
 
 const CAL_LINK = "soham-das-osleft/discovery-call";
 
@@ -48,10 +48,12 @@ const notForItems = [
   "Businesses not prepared to invest in systematic growth",
 ];
 
+const inputCls = "w-full border border-[#e5e7eb] rounded-lg px-3.5 py-2.5 text-[13px] text-[#111111] placeholder-[#9ca3af] outline-none focus:border-[#111111] transition-colors bg-white";
+const labelCls = "block text-[12px] font-semibold text-[#374151] uppercase tracking-wide mb-1.5";
+
 function CalSkeleton() {
   return (
     <div className="absolute inset-0 bg-white z-10 flex animate-pulse">
-      {/* Left panel */}
       <div className="w-[280px] shrink-0 border-r border-[#f3f4f6] p-8 space-y-4">
         <div className="h-3 w-24 bg-[#f3f4f6] rounded" />
         <div className="h-6 w-40 bg-[#f3f4f6] rounded" />
@@ -63,7 +65,6 @@ function CalSkeleton() {
           <div className="h-3 w-3/5 bg-[#f3f4f6] rounded" />
         </div>
       </div>
-      {/* Right panel — calendar grid */}
       <div className="flex-1 p-8">
         <div className="flex items-center justify-between mb-6">
           <div className="h-5 w-32 bg-[#f3f4f6] rounded" />
@@ -122,6 +123,13 @@ function CalEmbed() {
 }
 
 export function BookACallContent() {
+  const [step, setStep] = useState<"form" | "calendar">("form");
+  const [state, action, pending] = useActionState(submitDiscoveryForm, null);
+
+  useEffect(() => {
+    if (state?.success) setStep("calendar");
+  }, [state]);
+
   return (
     <main className="pt-28 pb-24 px-6">
       <div className="max-w-[1280px] mx-auto">
@@ -153,18 +161,126 @@ export function BookACallContent() {
           ))}
         </div>
 
-        {/* Cal embed + sidebar */}
+        {/* Step indicator */}
+        <div className="flex items-center gap-3 mb-8">
+          <div className={`flex items-center gap-2 text-[12.5px] font-semibold ${step === "form" ? "text-[#111111]" : "text-[#9ca3af] line-through"}`}>
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${step === "form" ? "bg-[#111111] text-white" : "bg-[#e5e7eb] text-[#9ca3af]"}`}>
+              {step === "calendar" ? "✓" : "1"}
+            </span>
+            Tell us about your business
+          </div>
+          <div className="flex-1 h-px bg-[#e5e7eb] max-w-[80px]" />
+          <div className={`flex items-center gap-2 text-[12.5px] font-semibold ${step === "calendar" ? "text-[#111111]" : "text-[#9ca3af]"}`}>
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${step === "calendar" ? "bg-[#111111] text-white" : "bg-[#f3f4f6] text-[#9ca3af]"}`}>
+              2
+            </span>
+            Pick your time
+          </div>
+        </div>
+
+        {/* Main grid */}
         <div className="grid lg:grid-cols-[1fr_380px] gap-10 items-start">
 
-          {/* Cal.com inline embed */}
-          <div className="border border-[#e5e7eb] rounded-xl overflow-hidden min-h-[600px]">
-            <CalEmbed />
+          {/* Left: Form or Calendar */}
+          <div className="border border-[#e5e7eb] rounded-xl overflow-hidden">
+            {step === "form" ? (
+              <div className="p-8">
+                <div className="mb-6">
+                  <p className="text-[18px] font-bold text-[#111111] tracking-tight">Before we pick up the phone</p>
+                  <p className="text-[13.5px] text-[#6b7280] mt-1">Tell us about your business. We use this to prepare — no generic questions on the call.</p>
+                </div>
+                <form action={action} className="space-y-5">
+                  {state?.error && (
+                    <p className="text-[12.5px] text-red-600 bg-red-50 border border-red-100 rounded-lg px-3.5 py-2.5">
+                      {state.error}
+                    </p>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelCls}>Full Name *</label>
+                      <input name="full_name" required placeholder="Alex Johnson" className={inputCls} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Company *</label>
+                      <input name="company" required placeholder="Acme Inc." className={inputCls} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Work Email *</label>
+                      <input name="email" type="email" required placeholder="alex@acme.com" className={inputCls} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Website</label>
+                      <input name="website" type="url" placeholder="https://acme.com" className={inputCls} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Industry *</label>
+                      <input name="industry" required placeholder="B2B SaaS, E-commerce…" className={inputCls} />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Monthly Revenue</label>
+                      <select name="revenue_range" className={`${inputCls} cursor-pointer`}>
+                        <option value="">Select range</option>
+                        <option>Under $10K</option>
+                        <option>$10K — $50K</option>
+                        <option>$50K — $200K</option>
+                        <option>$200K — $1M</option>
+                        <option>Over $1M</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={labelCls}>What's holding your revenue back? *</label>
+                    <textarea
+                      name="primary_challenges"
+                      required
+                      rows={3}
+                      placeholder="Be specific — pipeline issues, conversion problems, team capacity, wrong ICP…"
+                      className={`${inputCls} resize-none`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelCls}>What do you want from this call? *</label>
+                    <textarea
+                      name="call_goals"
+                      required
+                      rows={2}
+                      placeholder="Clarity on a specific problem, understanding whether we're a fit, a roadmap…"
+                      className={`${inputCls} resize-none`}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={pending}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#111111] text-white text-[13.5px] font-semibold rounded-lg hover:bg-[#1a1a1a] disabled:opacity-50 transition-colors"
+                  >
+                    {pending ? "Saving…" : (
+                      <>Continue — pick your time <ArrowRight size={14} /></>
+                    )}
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-2.5 px-6 py-4 border-b border-[#f3f4f6] bg-emerald-50">
+                  <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+                  <p className="text-[13px] text-emerald-800 font-medium">
+                    We've got your details. Now pick a time that works.
+                  </p>
+                </div>
+                <div className="min-h-[600px]">
+                  <CalEmbed />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right sidebar */}
           <div className="space-y-6 lg:sticky lg:top-28 lg:self-start">
 
-            {/* Agenda */}
             <div className="border border-[#e5e7eb] rounded-xl p-6">
               <p className="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-widest mb-4">
                 What we&apos;ll cover
@@ -179,7 +295,6 @@ export function BookACallContent() {
               </ul>
             </div>
 
-            {/* Who it's for / not for */}
             <div className="border border-[#e5e7eb] rounded-xl overflow-hidden">
               <div className="px-6 py-5 border-b border-[#e5e7eb]">
                 <p className="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-widest mb-4">
@@ -207,23 +322,6 @@ export function BookACallContent() {
                   ))}
                 </ul>
               </div>
-            </div>
-
-            {/* Prefer form */}
-            <div className="border border-[#e5e7eb] rounded-xl p-6">
-              <p className="text-[13px] font-medium text-[#374151] mb-1">
-                Prefer structured onboarding?
-              </p>
-              <p className="text-[12.5px] text-[#9ca3af] mb-4">
-                Complete our 5-step intake form and we&apos;ll come prepared.
-              </p>
-              <Link
-                href="/get-started"
-                className="flex items-center justify-center gap-2 py-2.5 border border-[#e5e7eb] text-[#374151] text-[13.5px] font-medium rounded-md hover:bg-[#f9fafb] transition-colors"
-              >
-                Use Get Started Instead
-                <ArrowRight size={12} />
-              </Link>
             </div>
 
           </div>
