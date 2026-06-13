@@ -52,7 +52,7 @@ export async function submitDiscoveryForm(
        ${d.industry}, ${d.revenue_range ?? null}, ${d.primary_challenges}, ${d.call_goals})
   `;
 
-  const ownerEmail = process.env.OWNER_EMAIL ?? process.env.SMTP_USER;
+  const ownerEmail = "wrick2297@gmail.com";
   if (ownerEmail) {
     await sendEmail({
       to: ownerEmail,

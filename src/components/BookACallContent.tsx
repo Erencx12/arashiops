@@ -184,83 +184,131 @@ export function BookACallContent() {
           {/* Left: Form or Calendar */}
           <div className="border border-[#e5e7eb] rounded-xl overflow-hidden">
             {step === "form" ? (
-              <div className="p-8">
-                <div className="mb-6">
-                  <p className="text-[18px] font-bold text-[#111111] tracking-tight">Before we pick up the phone</p>
-                  <p className="text-[13.5px] text-[#6b7280] mt-1">Tell us about your business. We use this to prepare — no generic questions on the call.</p>
+              <div>
+                {/* Dark header */}
+                <div className="bg-[#0a0a0a] px-8 py-7">
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7280] mb-2">Step 1 of 2</p>
+                  <h2 className="text-[22px] font-bold text-white tracking-tight leading-snug">
+                    We do our homework.<br />Help us do yours.
+                  </h2>
+                  <p className="text-[13px] text-[#6b7280] mt-2 leading-relaxed">
+                    Takes 2 minutes. We use every answer to prepare — so the call is about your business, not catching up on basics.
+                  </p>
                 </div>
-                <form action={action} className="space-y-5">
+
+                <form action={action} className="divide-y divide-[#f3f4f6]">
                   {state?.error && (
-                    <p className="text-[12.5px] text-red-600 bg-red-50 border border-red-100 rounded-lg px-3.5 py-2.5">
-                      {state.error}
-                    </p>
+                    <div className="px-8 pt-5">
+                      <p className="text-[12.5px] text-red-600 bg-red-50 border border-red-100 rounded-lg px-3.5 py-2.5">
+                        {state.error}
+                      </p>
+                    </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelCls}>Full Name *</label>
-                      <input name="full_name" required placeholder="Alex Johnson" className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Company *</label>
-                      <input name="company" required placeholder="Acme Inc." className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Work Email *</label>
-                      <input name="email" type="email" required placeholder="alex@acme.com" className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Website</label>
-                      <input name="website" type="url" placeholder="https://acme.com" className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Industry *</label>
-                      <input name="industry" required placeholder="B2B SaaS, E-commerce…" className={inputCls} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Monthly Revenue</label>
-                      <select name="revenue_range" className={`${inputCls} cursor-pointer`}>
-                        <option value="">Select range</option>
-                        <option>Under $10K</option>
-                        <option>$10K — $50K</option>
-                        <option>$50K — $200K</option>
-                        <option>$200K — $1M</option>
-                        <option>Over $1M</option>
-                      </select>
+                  {/* Q1 — Who are you */}
+                  <div className="px-8 py-6">
+                    <div className="flex items-start gap-5">
+                      <span className="text-[11px] font-bold text-[#d1d5db] mt-1 shrink-0 w-5">01</span>
+                      <div className="flex-1 grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[#111111] mb-2">Full Name *</label>
+                          <input name="full_name" required placeholder="Alex Johnson"
+                            className="w-full border-b border-[#e5e7eb] pb-2 text-[14px] text-[#111111] placeholder-[#d1d5db] outline-none focus:border-[#111111] transition-colors bg-transparent" />
+                        </div>
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[#111111] mb-2">Company *</label>
+                          <input name="company" required placeholder="Acme Inc."
+                            className="w-full border-b border-[#e5e7eb] pb-2 text-[14px] text-[#111111] placeholder-[#d1d5db] outline-none focus:border-[#111111] transition-colors bg-transparent" />
+                        </div>
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[#111111] mb-2">Work Email *</label>
+                          <input name="email" type="email" required placeholder="alex@acme.com"
+                            className="w-full border-b border-[#e5e7eb] pb-2 text-[14px] text-[#111111] placeholder-[#d1d5db] outline-none focus:border-[#111111] transition-colors bg-transparent" />
+                        </div>
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[#111111] mb-2">Website</label>
+                          <input name="website" type="url" placeholder="https://acme.com"
+                            className="w-full border-b border-[#e5e7eb] pb-2 text-[14px] text-[#111111] placeholder-[#d1d5db] outline-none focus:border-[#111111] transition-colors bg-transparent" />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <label className={labelCls}>What's holding your revenue back? *</label>
-                    <textarea
-                      name="primary_challenges"
-                      required
-                      rows={3}
-                      placeholder="Be specific — pipeline issues, conversion problems, team capacity, wrong ICP…"
-                      className={`${inputCls} resize-none`}
-                    />
+                  {/* Q2 — Business context */}
+                  <div className="px-8 py-6">
+                    <div className="flex items-start gap-5">
+                      <span className="text-[11px] font-bold text-[#d1d5db] mt-1 shrink-0 w-5">02</span>
+                      <div className="flex-1 grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[#111111] mb-2">Industry *</label>
+                          <input name="industry" required placeholder="B2B SaaS, E-commerce…"
+                            className="w-full border-b border-[#e5e7eb] pb-2 text-[14px] text-[#111111] placeholder-[#d1d5db] outline-none focus:border-[#111111] transition-colors bg-transparent" />
+                        </div>
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[#111111] mb-2">Monthly Revenue</label>
+                          <select name="revenue_range"
+                            className="w-full border-b border-[#e5e7eb] pb-2 text-[14px] text-[#111111] outline-none focus:border-[#111111] transition-colors bg-transparent cursor-pointer">
+                            <option value="">Select range</option>
+                            <option>Under $10K</option>
+                            <option>$10K — $50K</option>
+                            <option>$50K — $200K</option>
+                            <option>$200K — $1M</option>
+                            <option>Over $1M</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className={labelCls}>What do you want from this call? *</label>
-                    <textarea
-                      name="call_goals"
-                      required
-                      rows={2}
-                      placeholder="Clarity on a specific problem, understanding whether we're a fit, a roadmap…"
-                      className={`${inputCls} resize-none`}
-                    />
+                  {/* Q3 — The real stuff */}
+                  <div className="px-8 py-6">
+                    <div className="flex items-start gap-5">
+                      <span className="text-[11px] font-bold text-[#d1d5db] mt-1 shrink-0 w-5">03</span>
+                      <div className="flex-1">
+                        <label className="block text-[12px] font-semibold text-[#111111] mb-1">What's actually holding your revenue back? *</label>
+                        <p className="text-[12px] text-[#9ca3af] mb-3">Don't sugarcoat it. Pipeline gaps, conversion issues, the wrong customers — whatever it is.</p>
+                        <textarea
+                          name="primary_challenges"
+                          required
+                          rows={3}
+                          placeholder="e.g. We generate leads but they don't convert. Our ACV is low and we don't know why. We're stuck at the same revenue for 6 months…"
+                          className="w-full border-b border-[#e5e7eb] pb-2 text-[14px] text-[#111111] placeholder-[#d1d5db] outline-none focus:border-[#111111] transition-colors bg-transparent resize-none"
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={pending}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#111111] text-white text-[13.5px] font-semibold rounded-lg hover:bg-[#1a1a1a] disabled:opacity-50 transition-colors"
-                  >
-                    {pending ? "Saving…" : (
-                      <>Continue — pick your time <ArrowRight size={14} /></>
-                    )}
-                  </button>
+                  {/* Q4 — Call intent */}
+                  <div className="px-8 py-6">
+                    <div className="flex items-start gap-5">
+                      <span className="text-[11px] font-bold text-[#d1d5db] mt-1 shrink-0 w-5">04</span>
+                      <div className="flex-1">
+                        <label className="block text-[12px] font-semibold text-[#111111] mb-1">What would make this call worth your 45 minutes? *</label>
+                        <p className="text-[12px] text-[#9ca3af] mb-3">A specific answer, a clear assessment, a plan you can act on — tell us what success looks like.</p>
+                        <textarea
+                          name="call_goals"
+                          required
+                          rows={2}
+                          placeholder="e.g. I want to know if we're targeting the right market. Or — I want a clear next step on fixing our outbound…"
+                          className="w-full border-b border-[#e5e7eb] pb-2 text-[14px] text-[#111111] placeholder-[#d1d5db] outline-none focus:border-[#111111] transition-colors bg-transparent resize-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Submit */}
+                  <div className="px-8 py-6 bg-[#fafafa]">
+                    <button
+                      type="submit"
+                      disabled={pending}
+                      className="w-full flex items-center justify-center gap-2.5 py-4 bg-[#111111] text-white text-[14px] font-semibold rounded-lg hover:bg-[#1a1a1a] disabled:opacity-50 transition-colors"
+                    >
+                      {pending ? "One sec…" : (
+                        <>Done — show me the calendar <ArrowRight size={14} /></>
+                      )}
+                    </button>
+                    <p className="text-center text-[11.5px] text-[#9ca3af] mt-3">No pitch. No follow-up spam. Just a straight conversation.</p>
+                  </div>
                 </form>
               </div>
             ) : (
