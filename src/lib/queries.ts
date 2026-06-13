@@ -171,7 +171,9 @@ export function getMeetings(): Promise<DbMeeting[]> {
            COALESCE(c.company_name, '—') AS client_name,
            m.title, m.type,
            to_char(m.meeting_date, 'Mon DD, YYYY') AS meeting_date,
-           m.meeting_time, m.status, m.notes, m.duration
+           m.meeting_time, m.status, m.notes, m.duration,
+           COALESCE(m.video_url, NULL)  AS video_url,
+           COALESCE(m.is_new, false)    AS is_new
     FROM meetings m
     LEFT JOIN clients c ON c.id = m.client_id
     ORDER BY m.meeting_date DESC
@@ -179,8 +181,26 @@ export function getMeetings(): Promise<DbMeeting[]> {
 }
 
 export async function getUpcomingMeetingsCount(): Promise<number> {
-  const rows = await sql`SELECT COUNT(*) AS n FROM meetings WHERE status = 'Upcoming'` as unknown as { n: string }[];
-  return Number(rows[0]?.n ?? 0);
+  try {
+    const rows = await sql`
+      SELECT COUNT(*) AS n FROM meetings
+      WHERE status = 'Upcoming' AND COALESCE(is_new, true) = true
+    ` as unknown as { n: string }[];
+    return Number(rows[0]?.n ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+export async function markMeetingsSeen(): Promise<void> {
+  try {
+    await sql`ALTER TABLE meetings ADD COLUMN IF NOT EXISTS is_new BOOLEAN DEFAULT true`;
+    await sql`UPDATE meetings SET is_new = false WHERE is_new = true`;
+  } catch { /* column may not exist yet */ }
+}
+
+export async function deleteMeeting(id: number): Promise<void> {
+  await sql`DELETE FROM meetings WHERE id = ${id}`;
 }
 
 export async function upsertMeetingFromCal(data: {
@@ -190,20 +210,23 @@ export async function upsertMeetingFromCal(data: {
   meetingTime: string;
   duration: string;
   status: "Upcoming" | "Completed" | "Cancelled";
+  videoUrl?: string | null;
 }): Promise<void> {
+  await sql`ALTER TABLE meetings ADD COLUMN IF NOT EXISTS cal_uid   TEXT UNIQUE`;
+  await sql`ALTER TABLE meetings ADD COLUMN IF NOT EXISTS video_url TEXT`;
+  await sql`ALTER TABLE meetings ADD COLUMN IF NOT EXISTS is_new    BOOLEAN DEFAULT true`;
   await sql`
-    ALTER TABLE meetings ADD COLUMN IF NOT EXISTS cal_uid TEXT UNIQUE
-  `;
-  await sql`
-    INSERT INTO meetings (cal_uid, title, type, meeting_date, meeting_time, duration, status)
+    INSERT INTO meetings (cal_uid, title, type, meeting_date, meeting_time, duration, status, video_url, is_new)
     VALUES (${data.calUid}, ${data.title}, 'Discovery Call',
-            ${data.meetingDate}::date, ${data.meetingTime}, ${data.duration}, ${data.status})
+            ${data.meetingDate}::date, ${data.meetingTime}, ${data.duration}, ${data.status},
+            ${data.videoUrl ?? null}, true)
     ON CONFLICT (cal_uid) DO UPDATE SET
       title        = EXCLUDED.title,
       meeting_date = EXCLUDED.meeting_date,
       meeting_time = EXCLUDED.meeting_time,
       duration     = EXCLUDED.duration,
-      status       = EXCLUDED.status
+      status       = EXCLUDED.status,
+      video_url    = EXCLUDED.video_url
   `;
 }
 

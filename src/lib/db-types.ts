@@ -124,6 +124,8 @@ export type DbMeeting = {
   status: MeetingStatus;
   notes: string | null;
   duration: string;
+  video_url: string | null;
+  is_new: boolean;
 };
 
 export type DbContract = {

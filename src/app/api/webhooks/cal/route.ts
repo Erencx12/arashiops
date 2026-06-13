@@ -46,7 +46,9 @@ export async function POST(req: NextRequest) {
 
   const title = (payload.title as string) ?? "Discovery Call";
   const startTime = payload.startTime as string;
-  const durationMins = payload.duration as number ?? 45;
+  const durationMins = (payload.duration as number) ?? 45;
+  const videoCallData = payload.videoCallData as { url?: string } | undefined;
+  const videoUrl = videoCallData?.url ?? null;
 
   let status: "Upcoming" | "Completed" | "Cancelled" = "Upcoming";
   if (triggerEvent === "BOOKING_CANCELLED" || triggerEvent === "BOOKING_REJECTED") {
@@ -61,6 +63,7 @@ export async function POST(req: NextRequest) {
       meetingTime: formatTime(startTime),
       duration:    `${durationMins} mins`,
       status,
+      videoUrl,
     });
   } catch (err) {
     console.error("cal webhook db error", err);
